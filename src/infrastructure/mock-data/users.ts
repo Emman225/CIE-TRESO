@@ -1,0 +1,73 @@
+import { UserEntity } from '@/domain/entities/User';
+
+export const mockUsers: UserEntity[] = [
+  {
+    id: '0',
+    name: 'Administrateur Systeme',
+    email: 'admin@cie.ci',
+    phone: '+225 07 00 00 00',
+    role: 'Admin',
+    profileId: '1',
+    status: 'Active',
+    lastLogin: 'Il y a 1h',
+    avatar: 'https://ui-avatars.com/api/?name=Admin&background=e65000&color=fff',
+    createdAt: '2023-01-01',
+  },
+  {
+    id: '1',
+    name: 'Jean Kouassi',
+    email: 'j.kouassi@cie.ci',
+    phone: '+225 07 00 00 01',
+    role: 'Admin',
+    profileId: '1',
+    status: 'Active',
+    lastLogin: 'Il y a 2h',
+    avatar: 'https://picsum.photos/100/100?u=1',
+    createdAt: '2023-01-15',
+  },
+  {
+    id: '2',
+    name: 'Marie Tanoh',
+    email: 'm.tanoh@cie.ci',
+    phone: '+225 07 00 00 02',
+    role: 'Analyst',
+    profileId: '2',
+    status: 'Active',
+    lastLogin: 'Il y a 5h',
+    avatar: 'https://picsum.photos/100/100?u=2',
+    createdAt: '2023-03-20',
+  },
+  {
+    id: '3',
+    name: 'Amadou Koffi',
+    email: 'a.koffi@cie.ci',
+    phone: '+225 07 00 00 03',
+    role: 'Direction',
+    profileId: '3',
+    status: 'Inactive',
+    lastLogin: 'Il y a 2 jours',
+    avatar: 'https://picsum.photos/100/100?u=3',
+    createdAt: '2023-02-10',
+  },
+  {
+    id: '4',
+    name: 'Salimata Yao',
+    email: 's.yao@cie.ci',
+    phone: '+225 07 00 00 04',
+    role: 'Controller',
+    profileId: '4',
+    status: 'Active',
+    lastLogin: 'Il y a 1h',
+    avatar: 'https://picsum.photos/100/100?u=4',
+    createdAt: '2023-04-05',
+  },
+];
+
+// Password for all mock users: "password123"
+export const mockPasswords: Record<string, string> = {
+  'j.kouassi@cie.ci': 'password123',
+  'm.tanoh@cie.ci': 'password123',
+  'a.koffi@cie.ci': 'password123',
+  's.yao@cie.ci': 'password123',
+  'admin@cie.ci': 'password',
+};

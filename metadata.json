@@ -1,0 +1,8 @@
+
+{
+  "name": "CIE TRESO",
+  "description": "Système expert de gestion de trésorerie et d'analyse prévisionnelle pour la Compagnie Ivoirienne d'Électricité.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
