@@ -202,7 +202,7 @@ const VisualizationTemplate: React.FC<VisualizationTemplateProps> = ({
 
         // Set defaults
         if (loadedPeriodes.length > 0) {
-          const active = loadedPeriodes.find((p) => p.statut === 'EnCours');
+          const active = loadedPeriodes.find((p) => !p.isClosed);
           setSelectedPeriode(active?.id ?? loadedPeriodes[0].id);
         }
         if (loadedPlans.length > 0) {

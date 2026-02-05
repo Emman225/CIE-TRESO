@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { Badge } from '@/presentation/components/ui/Badge';
 import { Button } from '@/presentation/components/ui/Button';
+import { Modal } from '@/presentation/components/ui/Modal';
+import { ConfirmDialog } from '@/presentation/components/ui/ConfirmDialog';
 import { useToast } from '@/presentation/hooks/useToast';
 
 // ============ Types ============
@@ -178,6 +180,31 @@ const getDaysUntil = (dateStr: string): number => {
   return Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 };
 
+// ============ Form ============
+type EcheanceFormData = {
+  reference: string;
+  label: string;
+  beneficiary: string;
+  type: EcheanceType;
+  dueDate: string;
+  amount: string;
+  priority: 'high' | 'medium' | 'low';
+  recurrent: boolean;
+  notes: string;
+};
+
+const emptyForm: EcheanceFormData = {
+  reference: '',
+  label: '',
+  beneficiary: '',
+  type: 'fournisseur',
+  dueDate: '',
+  amount: '',
+  priority: 'medium',
+  recurrent: false,
+  notes: '',
+};
+
 // ============ Component ============
 const EcheancierPage: React.FC = () => {
   const { addToast } = useToast();
@@ -187,6 +214,12 @@ const EcheancierPage: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
   const [selectedMonth, setSelectedMonth] = useState('2026-02');
+
+  // Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingEcheance, setEditingEcheance] = useState<Echeance | null>(null);
+  const [formData, setFormData] = useState<EcheanceFormData>(emptyForm);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   // Stats
   const stats = useMemo(() => {
@@ -234,11 +267,94 @@ const EcheancierPage: React.FC = () => {
     return days;
   }, [echeances, selectedMonth]);
 
+  const openCreateModal = () => {
+    setEditingEcheance(null);
+    setFormData(emptyForm);
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (echeance: Echeance) => {
+    setEditingEcheance(echeance);
+    setFormData({
+      reference: echeance.reference,
+      label: echeance.label,
+      beneficiary: echeance.beneficiary,
+      type: echeance.type,
+      dueDate: echeance.dueDate,
+      amount: String(echeance.amount),
+      priority: echeance.priority,
+      recurrent: echeance.recurrent,
+      notes: echeance.notes || '',
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleSave = () => {
+    if (!formData.label || !formData.beneficiary || !formData.dueDate || !formData.amount) {
+      addToast('Veuillez remplir tous les champs obligatoires', 'error');
+      return;
+    }
+
+    const parsedAmount = Number(formData.amount.replace(/\s/g, ''));
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      addToast('Le montant doit etre un nombre positif', 'error');
+      return;
+    }
+
+    if (editingEcheance) {
+      setEcheances((prev) =>
+        prev.map((e) =>
+          e.id === editingEcheance.id
+            ? {
+                ...e,
+                reference: formData.reference || e.reference,
+                label: formData.label,
+                beneficiary: formData.beneficiary,
+                type: formData.type,
+                dueDate: formData.dueDate,
+                amount: parsedAmount,
+                priority: formData.priority,
+                recurrent: formData.recurrent,
+                notes: formData.notes || undefined,
+              }
+            : e
+        )
+      );
+      addToast(`Echeance "${formData.label}" mise a jour`, 'success');
+    } else {
+      const newEcheance: Echeance = {
+        id: `ECH-${String(Date.now()).slice(-6)}`,
+        reference: formData.reference || `REF-${Date.now()}`,
+        label: formData.label,
+        beneficiary: formData.beneficiary,
+        type: formData.type,
+        dueDate: formData.dueDate,
+        amount: parsedAmount,
+        status: 'pending',
+        priority: formData.priority,
+        recurrent: formData.recurrent,
+        notes: formData.notes || undefined,
+      };
+      setEcheances((prev) => [...prev, newEcheance]);
+      addToast(`Echeance "${formData.label}" creee avec succes`, 'success');
+    }
+
+    setIsModalOpen(false);
+  };
+
   const handleMarkAsPaid = (id: string) => {
     setEcheances((prev) =>
       prev.map((e) => (e.id === id ? { ...e, status: 'paid' as const } : e))
     );
-    addToast({ type: 'success', title: 'Echeance payee', message: 'L\'echeance a ete marquee comme payee.' });
+    addToast(`Echeance marquee comme payee`, 'success');
+  };
+
+  const handleDelete = () => {
+    if (!confirmDeleteId) return;
+    const echeance = echeances.find((e) => e.id === confirmDeleteId);
+    setEcheances((prev) => prev.filter((e) => e.id !== confirmDeleteId));
+    addToast(`Echeance "${echeance?.label}" supprimee`, 'success');
+    setConfirmDeleteId(null);
   };
 
   return (
@@ -275,7 +391,7 @@ const EcheancierPage: React.FC = () => {
               Calendrier
             </button>
           </div>
-          <Button variant="primary" size="md" icon="add">
+          <Button variant="primary" size="md" icon="add" onClick={openCreateModal}>
             Nouvelle echeance
           </Button>
         </div>
@@ -392,18 +508,29 @@ const EcheancierPage: React.FC = () => {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     {echeance.status !== 'paid' && (
                       <button
                         onClick={() => handleMarkAsPaid(echeance.id)}
-                        className="p-2 rounded-lg bg-green-100 text-green-600 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-900/50 transition-all"
+                        className="p-2 rounded-lg text-zinc-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all"
                         title="Marquer comme paye"
                       >
                         <span className="material-symbols-outlined text-lg">check_circle</span>
                       </button>
                     )}
-                    <button className="p-2 rounded-lg bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 transition-all">
-                      <span className="material-symbols-outlined text-lg">more_vert</span>
+                    <button
+                      onClick={() => openEditModal(echeance)}
+                      className="p-2 rounded-lg text-zinc-400 hover:text-primary hover:bg-primary/5 transition-all"
+                      title="Modifier"
+                    >
+                      <span className="material-symbols-outlined text-lg">edit</span>
+                    </button>
+                    <button
+                      onClick={() => setConfirmDeleteId(echeance.id)}
+                      className="p-2 rounded-lg text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
+                      title="Supprimer"
+                    >
+                      <span className="material-symbols-outlined text-lg">delete</span>
                     </button>
                   </div>
                 </div>
@@ -484,6 +611,200 @@ const EcheancierPage: React.FC = () => {
           </div>
         </div>
       )}
+      {/* Create / Edit Modal */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={editingEcheance ? 'Modifier l\'echeance' : 'Nouvelle echeance'}
+        description={editingEcheance ? 'Mettez a jour les informations de l\'echeance' : 'Renseignez les informations de la nouvelle echeance'}
+        size="lg"
+        footer={
+          <div className="flex items-center gap-3 w-full">
+            <Button variant="outline" size="md" onClick={() => setIsModalOpen(false)} className="flex-1">
+              Annuler
+            </Button>
+            <Button variant="primary" size="md" icon="check_circle" onClick={handleSave} className="flex-1">
+              {editingEcheance ? 'Mettre a jour' : 'Creer l\'echeance'}
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-5">
+          {/* Label */}
+          <div>
+            <label className="block text-xs font-black text-zinc-500 uppercase tracking-widest mb-2">
+              Libelle <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">
+                label
+              </span>
+              <input
+                type="text"
+                value={formData.label}
+                onChange={(e) => setFormData({ ...formData, label: e.target.value })}
+                placeholder="Ex: TVA mensuelle Fevrier 2026"
+                className="w-full pl-10 pr-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-medium text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+              />
+            </div>
+          </div>
+
+          {/* Beneficiary & Reference */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-black text-zinc-500 uppercase tracking-widest mb-2">
+                Beneficiaire <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">
+                  business
+                </span>
+                <input
+                  type="text"
+                  value={formData.beneficiary}
+                  onChange={(e) => setFormData({ ...formData, beneficiary: e.target.value })}
+                  placeholder="Ex: Direction Generale des Impots"
+                  className="w-full pl-10 pr-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-medium text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-black text-zinc-500 uppercase tracking-widest mb-2">
+                Reference
+              </label>
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">
+                  tag
+                </span>
+                <input
+                  type="text"
+                  value={formData.reference}
+                  onChange={(e) => setFormData({ ...formData, reference: e.target.value })}
+                  placeholder="Ex: TVA-2026-02"
+                  className="w-full pl-10 pr-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-medium text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Amount & Due Date */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-black text-zinc-500 uppercase tracking-widest mb-2">
+                Montant (FCFA) <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">
+                  payments
+                </span>
+                <input
+                  type="text"
+                  value={formData.amount}
+                  onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                  placeholder="Ex: 890000000"
+                  className="w-full pl-10 pr-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-medium text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-black text-zinc-500 uppercase tracking-widest mb-2">
+                Date d'echeance <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">
+                  event
+                </span>
+                <input
+                  type="date"
+                  value={formData.dueDate}
+                  onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
+                  className="w-full pl-10 pr-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-medium text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Type & Priority */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-black text-zinc-500 uppercase tracking-widest mb-2">
+                Type
+              </label>
+              <select
+                value={formData.type}
+                onChange={(e) => setFormData({ ...formData, type: e.target.value as EcheanceType })}
+                className="w-full py-3 px-4 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-bold text-zinc-700 dark:text-zinc-300 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+              >
+                {Object.entries(TYPE_CONFIG).map(([key, config]) => (
+                  <option key={key} value={key}>{config.label}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-black text-zinc-500 uppercase tracking-widest mb-2">
+                Priorite
+              </label>
+              <select
+                value={formData.priority}
+                onChange={(e) => setFormData({ ...formData, priority: e.target.value as 'high' | 'medium' | 'low' })}
+                className="w-full py-3 px-4 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-bold text-zinc-700 dark:text-zinc-300 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+              >
+                <option value="high">Haute</option>
+                <option value="medium">Moyenne</option>
+                <option value="low">Basse</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Recurrent toggle */}
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setFormData({ ...formData, recurrent: !formData.recurrent })}
+              className={`size-5 rounded-md border-2 flex items-center justify-center transition-all ${
+                formData.recurrent
+                  ? 'bg-primary border-primary'
+                  : 'border-zinc-300 dark:border-zinc-600 hover:border-primary/50'
+              }`}
+            >
+              {formData.recurrent && (
+                <span className="material-symbols-outlined text-white text-sm">check</span>
+              )}
+            </button>
+            <label
+              onClick={() => setFormData({ ...formData, recurrent: !formData.recurrent })}
+              className="text-sm text-zinc-600 dark:text-zinc-400 cursor-pointer select-none font-medium"
+            >
+              Echeance recurrente
+            </label>
+          </div>
+
+          {/* Notes */}
+          <div>
+            <label className="block text-xs font-black text-zinc-500 uppercase tracking-widest mb-2">
+              Notes
+            </label>
+            <textarea
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              placeholder="Informations complementaires..."
+              rows={2}
+              className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-medium text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none"
+            />
+          </div>
+        </div>
+      </Modal>
+
+      {/* Delete Confirm */}
+      <ConfirmDialog
+        isOpen={confirmDeleteId !== null}
+        onClose={() => setConfirmDeleteId(null)}
+        onConfirm={handleDelete}
+        title="Supprimer l'echeance"
+        message={`Etes-vous sur de vouloir supprimer l'echeance "${echeances.find((e) => e.id === confirmDeleteId)?.label}" ? Cette action est irreversible.`}
+        confirmLabel="Supprimer"
+        variant="danger"
+      />
     </div>
   );
 };

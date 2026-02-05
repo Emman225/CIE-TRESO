@@ -23,14 +23,14 @@ export class MockConfigRepository implements IConfigRepository {
 
   async getActivePeriode(): Promise<PeriodeEntity | null> {
     await delay(200);
-    return this.periodes.find((p) => p.statut === 'EnCours') ?? null;
+    return this.periodes.find((p) => !p.isClosed) ?? null;
   }
 
   // --- Plans ---
   async getPlans(periodeId?: string): Promise<PlanTresorerieEntity[]> {
     await delay(300);
     if (periodeId) {
-      return this.plans.filter((p) => p.periodeId === periodeId).map((p) => ({ ...p }));
+      return this.plans.filter((p) => p.periodeIds.includes(periodeId)).map((p) => ({ ...p }));
     }
     return this.plans.map((p) => ({ ...p }));
   }

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/presentation/hooks/useAuth';
+import logoCie from '@/assets/Logo_CIE.jpg';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -26,8 +27,8 @@ const LoginPage: React.FC = () => {
     <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Mobile Logo - Hidden on large screens where left panel shows */}
       <div className="flex flex-col items-center mb-10 lg:hidden">
-        <div className="bg-primary size-14 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-primary/30 mb-4">
-          <span className="material-symbols-outlined filled text-3xl">bolt</span>
+        <div className="bg-white size-14 rounded-2xl flex items-center justify-center p-1.5 shadow-xl shadow-primary/30 mb-4">
+          <img src={logoCie} alt="CIE Logo" className="w-full h-full object-contain" />
         </div>
         <h1 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
           CIE TRESO
@@ -40,7 +41,7 @@ const LoginPage: React.FC = () => {
       {/* Welcome Text */}
       <div className="mb-8">
         <h2 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
-          Bienvenue
+          Connexion
         </h2>
         <p className="text-zinc-500 text-sm mt-2">
           Connectez-vous pour acceder a votre espace de gestion
@@ -160,28 +161,6 @@ const LoginPage: React.FC = () => {
           )}
         </button>
       </form>
-
-      {/* Divider */}
-      <div className="relative my-8">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-zinc-200 dark:border-zinc-700"></div>
-        </div>
-        <div className="relative flex justify-center">
-          <span className="px-4 text-xs font-medium text-zinc-400 bg-zinc-50 dark:bg-zinc-950">
-            ou
-          </span>
-        </div>
-      </div>
-
-      {/* SSO Option */}
-      <button
-        type="button"
-        className="w-full h-14 bg-white dark:bg-zinc-800/50 border-2 border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 font-bold rounded-xl hover:border-zinc-300 dark:hover:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-all flex items-center justify-center gap-3 text-sm"
-        onClick={() => {}}
-      >
-        <span className="material-symbols-outlined text-xl">domain</span>
-        Connexion avec Active Directory
-      </button>
 
       {/* Footer Links */}
       <div className="mt-10 pt-8 border-t border-zinc-200 dark:border-zinc-800">

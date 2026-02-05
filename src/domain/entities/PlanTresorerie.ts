@@ -8,3 +8,5 @@ export interface PlanEntity {
   status: PlanStatus;
   createdAt: string;
 }
+
+export type PlanTresorerieEntity = PlanEntity;

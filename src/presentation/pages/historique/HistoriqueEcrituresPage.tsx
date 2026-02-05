@@ -274,19 +274,7 @@ const HistoriqueEcrituresPage: React.FC = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-zinc-900 rounded-[20px] border border-zinc-200 dark:border-zinc-800 p-4">
-          <div className="flex items-center gap-3">
-            <div className="size-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-              <span className="material-symbols-outlined text-zinc-600 dark:text-zinc-400">receipt_long</span>
-            </div>
-            <div>
-              <p className="text-xs font-bold text-zinc-500 uppercase">Total Écritures</p>
-              <p className="text-xl font-black text-zinc-900 dark:text-white">{stats.total}</p>
-            </div>
-          </div>
-        </div>
-
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="bg-white dark:bg-zinc-900 rounded-[20px] border border-zinc-200 dark:border-zinc-800 p-4">
           <div className="flex items-center gap-3">
             <div className="size-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
@@ -307,20 +295,6 @@ const HistoriqueEcrituresPage: React.FC = () => {
             <div>
               <p className="text-xs font-bold text-zinc-500 uppercase">Décaissements ({stats.countDecaissements})</p>
               <p className="text-lg font-black text-red-600">{(stats.totalDecaissements / 1000000000).toFixed(2)} Mds</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-zinc-900 rounded-[20px] border border-zinc-200 dark:border-zinc-800 p-4">
-          <div className="flex items-center gap-3">
-            <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center">
-              <span className="material-symbols-outlined text-primary">account_balance</span>
-            </div>
-            <div>
-              <p className="text-xs font-bold text-zinc-500 uppercase">Solde Net</p>
-              <p className={`text-lg font-black ${stats.totalEncaissements - stats.totalDecaissements >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                {((stats.totalEncaissements - stats.totalDecaissements) / 1000000000).toFixed(2)} Mds
-              </p>
             </div>
           </div>
         </div>

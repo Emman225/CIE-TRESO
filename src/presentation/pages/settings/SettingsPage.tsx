@@ -349,7 +349,7 @@ const SettingsPage: React.FC = () => {
             </Badge>
           </div>
           <p className="text-xs text-zinc-400 mt-1">
-            {item.startDate} - {item.endDate}
+            {item.year} - Mois {item.month}
           </p>
         </div>
       )}
@@ -369,16 +369,7 @@ const SettingsPage: React.FC = () => {
               <input type="number" min={1} max={12} value={item.month} onChange={(e) => onChange({ ...item, month: Number(e.target.value) })} className={inputClass} />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={labelClass}>Date debut</label>
-              <input type="date" value={item.startDate} onChange={(e) => onChange({ ...item, startDate: e.target.value })} className={inputClass} />
-            </div>
-            <div>
-              <label className={labelClass}>Date fin</label>
-              <input type="date" value={item.endDate} onChange={(e) => onChange({ ...item, endDate: e.target.value })} className={inputClass} />
-            </div>
-          </div>
+          {/* Date debut/fin retires */}
           <div className="flex items-center gap-3">
             <label className="text-xs font-black text-zinc-500 uppercase tracking-widest">Cloture</label>
             <button
@@ -396,95 +387,11 @@ const SettingsPage: React.FC = () => {
 
   // ============ Plans Tab ============
   const renderPlansPanel = () => (
-    <ConfigCrudPanel<PlanEntity>
-      title="Plans de Tresorerie"
-      subtitle="Plans annuels et previsionnels"
-      items={plans}
-      selectedItem={selectedPlan}
-      onSelect={setSelectedPlan}
-      onNew={() => {
-        const newItem: PlanEntity = {
-          id: String(Date.now()),
-          label: 'Nouveau plan',
-          year: 2024,
-          status: 'Draft',
-          periodeIds: [],
-          createdAt: new Date().toISOString(),
-        };
-        setPlans((prev) => [...prev, newItem]);
-        setSelectedPlan(newItem);
-      }}
-      onSave={async (item) => {
-        setPlans((prev) => prev.map((p) => (p.id === item.id ? item : p)));
-        addToast(`Plan "${item.label}" enregistre`, 'success');
-      }}
-      onDelete={async (id) => {
-        setPlans((prev) => prev.filter((p) => p.id !== id));
-        setSelectedPlan(null);
-        addToast('Plan supprime', 'success');
-      }}
-      renderListItem={(item, isSelected) => (
-        <div>
-          <div className="flex items-center gap-2">
-            <p className={`text-sm font-black ${isSelected ? 'text-primary' : 'text-zinc-900 dark:text-white'}`}>
-              {item.label}
-            </p>
-            <Badge variant={item.status === 'Active' ? 'success' : item.status === 'Draft' ? 'warning' : 'neutral'}>
-              {item.status}
-            </Badge>
-          </div>
-          <p className="text-xs text-zinc-400 mt-1">
-            Annee {item.year} | {item.periodeIds.length} periode{item.periodeIds.length > 1 ? 's' : ''}
-          </p>
-        </div>
-      )}
-      renderEditForm={(item, onChange) => (
-        <div className="space-y-5">
-          <div>
-            <label className={labelClass}>Libelle</label>
-            <input type="text" value={item.label} onChange={(e) => onChange({ ...item, label: e.target.value })} className={inputClass} />
-          </div>
-          <div>
-            <label className={labelClass}>Annee</label>
-            <input type="number" value={item.year} onChange={(e) => onChange({ ...item, year: Number(e.target.value) })} className={inputClass} />
-          </div>
-          <div>
-            <label className={labelClass}>Statut</label>
-            <select value={item.status} onChange={(e) => onChange({ ...item, status: e.target.value as 'Draft' | 'Active' | 'Closed' })} className={selectClass}>
-              <option value="Draft">Brouillon</option>
-              <option value="Active">Actif</option>
-              <option value="Closed">Cloture</option>
-            </select>
-          </div>
-          <div>
-            <label className={labelClass}>Periodes associees</label>
-            <div className="space-y-2 max-h-40 overflow-y-auto">
-              {periodes.map((periode) => {
-                const isChecked = item.periodeIds.includes(periode.id);
-                return (
-                  <label key={periode.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={isChecked}
-                      onChange={() => {
-                        const newIds = isChecked
-                          ? item.periodeIds.filter((id) => id !== periode.id)
-                          : [...item.periodeIds, periode.id];
-                        onChange({ ...item, periodeIds: newIds });
-                      }}
-                      className="size-4 rounded border-zinc-300 text-primary focus:ring-primary/20"
-                    />
-                    <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                      {periode.label}
-                    </span>
-                  </label>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-    />
+    <div className="bg-white dark:bg-zinc-900 rounded-[24px] border border-zinc-200 dark:border-zinc-800 p-12 text-center">
+      <span className="material-symbols-outlined text-5xl text-zinc-300 dark:text-zinc-600 mb-4 block">account_balance</span>
+      <h3 className="text-lg font-black text-zinc-400 dark:text-zinc-500">Plans de Tresorerie</h3>
+      <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-2">Aucun contenu a afficher pour le moment.</p>
+    </div>
   );
 
   // ============ Poles Tab ============

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/presentation/hooks/useAuth';
+import logoCie from '@/assets/Logo_CIE.jpg';
 
 const ForgotPasswordPage: React.FC = () => {
   const navigate = useNavigate();
@@ -25,8 +26,8 @@ const ForgotPasswordPage: React.FC = () => {
     <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Mobile Logo - Hidden on large screens where left panel shows */}
       <div className="flex flex-col items-center mb-10 lg:hidden">
-        <div className="bg-primary size-14 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-primary/30 mb-4">
-          <span className="material-symbols-outlined filled text-3xl">bolt</span>
+        <div className="bg-white size-14 rounded-2xl flex items-center justify-center p-1.5 shadow-xl shadow-primary/30 mb-4">
+          <img src={logoCie} alt="CIE Logo" className="w-full h-full object-contain" />
         </div>
         <h1 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
           CIE TRESO

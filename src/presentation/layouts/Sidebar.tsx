@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { usePermissions } from '@/presentation/hooks/usePermissions';
 import type { ResourceType } from '@/shared/types/roles';
+import logoCie from '@/assets/Logo_CIE.jpg';
 
 interface NavItem {
   label: string;
@@ -22,13 +23,9 @@ interface NavGroup {
 const mainItems: NavItem[] = [
   { label: 'Tableau de bord', icon: 'dashboard', path: '/', resource: 'dashboard' },
   { label: 'Plan de tresorerie', icon: 'account_tree', path: '/plan', resource: 'plan' },
-  { label: 'Position Tresorerie', icon: 'account_balance_wallet', path: '/position', resource: 'position' },
-  { label: 'Echeancier', icon: 'event_note', path: '/echeancier', resource: 'echeancier' },
-  { label: 'Budget vs Realise', icon: 'compare', path: '/budget-realise', resource: 'budget' },
   { label: 'Historique', icon: 'history', path: '/historique', resource: 'historique' },
   { label: 'Validation', icon: 'fact_check', path: '/validation', resource: 'validation' },
   { label: "Centre d'import", icon: 'cloud_upload', path: '/imports', resource: 'imports' },
-  { label: 'Rapprochement', icon: 'compare_arrows', path: '/rapprochement', resource: 'rapprochement' },
   { label: 'Simulation', icon: 'query_stats', path: '/forecast', resource: 'forecast' },
   { label: 'Reporting', icon: 'assessment', path: '/reporting', resource: 'reporting' },
 ];
@@ -207,8 +204,8 @@ const Sidebar: React.FC = () => {
       {/* Logo - Fixed at top */}
       <div className={`flex-shrink-0 p-6 pb-4 border-b ${isSidebarDark ? 'border-zinc-800' : 'border-zinc-200'}`}>
         <div className="flex items-center gap-3">
-          <div className="bg-primary size-11 rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/30">
-            <span className="material-symbols-outlined filled text-2xl">bolt</span>
+          <div className="bg-white size-11 rounded-xl flex items-center justify-center p-1 shadow-lg flex-shrink-0">
+            <img src={logoCie} alt="CIE Logo" className="w-full h-full object-contain" />
           </div>
           <div className="flex flex-col">
             <h1 className={`text-lg font-black leading-none tracking-tight ${logoTextColor}`}>

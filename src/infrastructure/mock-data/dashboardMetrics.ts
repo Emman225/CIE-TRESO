@@ -149,24 +149,6 @@ export const alerts: Alert[] = [
     timestamp: 'Il y a 1 jour',
     read: true,
   },
-  {
-    id: '4',
-    title: 'Echeance paiement fournisseur',
-    message:
-      'Le paiement de 95,600,000 FCFA a CIPREL arrive a echeance dans 3 jours.',
-    severity: 'warning',
-    timestamp: 'Il y a 3h',
-    read: false,
-  },
-  {
-    id: '5',
-    title: 'Periode a cloturer',
-    message:
-      "L'exercice de septembre 2024 est en attente de cloture depuis 5 jours.",
-    severity: 'info',
-    timestamp: 'Il y a 1 jour',
-    read: true,
-  },
 ];
 
 /** Domain-level summary for the dashboard donut chart */

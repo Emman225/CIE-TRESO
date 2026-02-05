@@ -63,8 +63,13 @@ const ACTION_BADGE_MAP: Record<AuditActionSimple, { variant: 'success' | 'warnin
   LOGIN: { variant: 'neutral', icon: 'login' },
 };
 
+type ReportingTab = 'finance' | 'audit';
+
 const ReportingPage: React.FC = () => {
   const { addToast } = useToast();
+
+  // Sub-menu tab state
+  const [activeTab, setActiveTab] = useState<ReportingTab>('finance');
 
   // Loading state
   const [isLoading, setIsLoading] = useState(true);
@@ -260,78 +265,108 @@ const ReportingPage: React.FC = () => {
         </p>
       </div>
 
-      {/* Report Generator Cards */}
-      <div>
-        <div className="flex items-center gap-3 mb-4">
-          <span className="material-symbols-outlined text-zinc-400">description</span>
-          <h2 className="text-lg font-black text-zinc-900 dark:text-white tracking-tight">
-            Generateur de rapports
-          </h2>
-        </div>
-
-        {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[...Array(4)].map((_, i) => (
-              <SkeletonCard key={i} lines={4} />
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {REPORT_TEMPLATES.map((template) => (
-              <div
-                key={template.id}
-                className="bg-white dark:bg-zinc-900 rounded-[24px] border border-zinc-200 dark:border-zinc-800 p-6 flex flex-col justify-between hover:shadow-lg hover:border-primary/20 transition-all group"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                      <span className="material-symbols-outlined text-primary text-2xl">
-                        {template.icon}
-                      </span>
-                    </div>
-                    <Badge variant="neutral">{template.category}</Badge>
-                  </div>
-
-                  <h3 className="text-sm font-black text-zinc-900 dark:text-white mb-2">
-                    {template.title}
-                  </h3>
-                  <p className="text-xs text-zinc-400 font-medium leading-relaxed mb-6">
-                    {template.description}
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  {template.formats.includes('excel') && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      icon="table_chart"
-                      isLoading={generatingReport === `${template.id}-excel`}
-                      onClick={() => handleGenerateReport(template, 'excel')}
-                      className="flex-1"
-                    >
-                      Excel
-                    </Button>
-                  )}
-                  {template.formats.includes('pdf') && (
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      icon="picture_as_pdf"
-                      isLoading={generatingReport === `${template.id}-pdf`}
-                      onClick={() => handleGenerateReport(template, 'pdf')}
-                      className="flex-1"
-                    >
-                      PDF
-                    </Button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+      {/* Sub-menu Tabs */}
+      <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-zinc-800">
+        <button
+          onClick={() => setActiveTab('finance')}
+          className={`flex items-center gap-2 px-5 py-3 text-sm font-black transition-all border-b-2 -mb-px ${
+            activeTab === 'finance'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+          }`}
+        >
+          <span className="material-symbols-outlined text-lg">assessment</span>
+          Reporting Finance
+        </button>
+        <button
+          onClick={() => setActiveTab('audit')}
+          className={`flex items-center gap-2 px-5 py-3 text-sm font-black transition-all border-b-2 -mb-px ${
+            activeTab === 'audit'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+          }`}
+        >
+          <span className="material-symbols-outlined text-lg">history</span>
+          Reporting Audit
+        </button>
       </div>
 
+      {/* Finance Tab Content */}
+      {activeTab === 'finance' && (
+        <div>
+          <div className="flex items-center gap-3 mb-4">
+            <span className="material-symbols-outlined text-zinc-400">description</span>
+            <h2 className="text-lg font-black text-zinc-900 dark:text-white tracking-tight">
+              Generateur de rapports
+            </h2>
+          </div>
+
+          {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[...Array(4)].map((_, i) => (
+                <SkeletonCard key={i} lines={4} />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {REPORT_TEMPLATES.map((template) => (
+                <div
+                  key={template.id}
+                  className="bg-white dark:bg-zinc-900 rounded-[24px] border border-zinc-200 dark:border-zinc-800 p-6 flex flex-col justify-between hover:shadow-lg hover:border-primary/20 transition-all group"
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                        <span className="material-symbols-outlined text-primary text-2xl">
+                          {template.icon}
+                        </span>
+                      </div>
+                      <Badge variant="neutral">{template.category}</Badge>
+                    </div>
+
+                    <h3 className="text-sm font-black text-zinc-900 dark:text-white mb-2">
+                      {template.title}
+                    </h3>
+                    <p className="text-xs text-zinc-400 font-medium leading-relaxed mb-6">
+                      {template.description}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {template.formats.includes('excel') && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        icon="table_chart"
+                        isLoading={generatingReport === `${template.id}-excel`}
+                        onClick={() => handleGenerateReport(template, 'excel')}
+                        className="flex-1"
+                      >
+                        Excel
+                      </Button>
+                    )}
+                    {template.formats.includes('pdf') && (
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        icon="picture_as_pdf"
+                        isLoading={generatingReport === `${template.id}-pdf`}
+                        onClick={() => handleGenerateReport(template, 'pdf')}
+                        className="flex-1"
+                      >
+                        PDF
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Audit Tab Content */}
+      {activeTab === 'audit' && <>
       {/* Audit Trail Section */}
       <div>
         <div className="flex items-center justify-between mb-4">
@@ -464,6 +499,7 @@ const ReportingPage: React.FC = () => {
           );
         })}
       </div>
+      </>}
     </div>
   );
 };

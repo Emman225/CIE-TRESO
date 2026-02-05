@@ -1,44 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Line } from 'recharts';
-import { useAuth } from '@/presentation/hooks/useAuth';
 import { useToast } from '@/presentation/hooks/useToast';
 import { MetricCard } from '@/presentation/components/ui/MetricCard';
-import { Card } from '@/presentation/components/ui/Card';
 import { Badge } from '@/presentation/components/ui/Badge';
 import { BarChartWidget } from '@/presentation/components/charts/BarChartWidget';
 import { dashboardRepository } from '@/infrastructure/di/container';
 import { PATH } from '@/shared/constants/routes';
 import type { Metric, Transaction, Alert } from '@/shared/types';
-import type { ChartDataPoint } from '@/domain/repositories/IDashboardRepository';
 
 const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const { toasts, addToast } = useToast();
 
   const [metrics, setMetrics] = useState<Metric[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([]);
-  const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadData = async () => {
-      try {
-        const [m, t, a, c] = await Promise.all([
-          dashboardRepository.getMetrics(),
-          dashboardRepository.getTransactions(),
-          dashboardRepository.getAlerts(),
-          dashboardRepository.getChartData(),
-        ]);
-        setMetrics(m);
-        setTransactions(t);
-        setAlerts(a);
-        setChartData(c);
-      } finally {
-        setIsLoading(false);
-      }
+      const [m, t, a] = await Promise.all([
+        dashboardRepository.getMetrics(),
+        dashboardRepository.getTransactions(),
+        dashboardRepository.getAlerts(),
+      ]);
+      setMetrics(m);
+      setTransactions(t);
+      setAlerts(a);
     };
     loadData();
   }, []);
@@ -124,7 +111,7 @@ const DashboardPage: React.FC = () => {
         {[
           { label: 'Plan de Tresorerie', icon: 'table_chart', path: PATH.PLAN, color: 'bg-[#e65000]' },
           { label: 'Centre d\'Import', icon: 'cloud_upload', path: PATH.IMPORTS, color: 'bg-[#137fec]' },
-          { label: 'Simulation Forecast', icon: 'query_stats', path: PATH.FORECAST, color: 'bg-zinc-900 dark:bg-white dark:text-zinc-900' },
+          { label: 'Simulation', icon: 'query_stats', path: PATH.FORECAST, color: 'bg-zinc-900 dark:bg-white dark:text-zinc-900' },
         ].map((action) => (
           <button
             key={action.label}
@@ -153,40 +140,8 @@ const DashboardPage: React.FC = () => {
         ))}
       </div>
 
-      {/* Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-white dark:bg-zinc-900 p-6 rounded-[24px] border border-zinc-200 dark:border-zinc-800 shadow-sm">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-            <h3 className="text-lg font-bold text-zinc-900 dark:text-white">Evolution Cash Flow (en Milliards)</h3>
-            <div className="flex gap-4 text-[10px] font-black uppercase tracking-widest bg-zinc-50 dark:bg-zinc-800 p-2 rounded-lg">
-              <div className="flex items-center gap-2"><span className="size-2.5 rounded-full bg-[#e65000] shadow-sm shadow-[#e65000]/40"></span> Reel</div>
-              <div className="flex items-center gap-2"><span className="size-2.5 rounded-full bg-[#137fec] shadow-sm shadow-[#137fec]/40"></span> Forecast</div>
-            </div>
-          </div>
-          <div className="h-[320px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData}>
-                <defs>
-                  <linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#e65000" stopOpacity={0.15} />
-                    <stop offset="95%" stopColor="#e65000" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" opacity={0.5} />
-                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 'bold' }} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} />
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#fff', border: 'none', borderRadius: '16px', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
-                  itemStyle={{ fontSize: '12px', fontWeight: '900' }}
-                  cursor={{ stroke: '#e65000', strokeWidth: 1, strokeDasharray: '4 4' }}
-                />
-                <Area type="monotone" dataKey="actual" stroke="#e65000" strokeWidth={4} fillOpacity={1} fill="url(#colorActual)" animationDuration={1500} />
-                <Line type="monotone" dataKey="forecast" stroke="#137fec" strokeWidth={2} strokeDasharray="6 3" dot={{ r: 4, fill: '#137fec', strokeWidth: 0 }} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-white dark:bg-zinc-900 p-6 rounded-[24px] border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col">
           <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-6">Repartition par Flux</h3>
           <BarChartWidget

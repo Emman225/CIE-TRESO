@@ -20,36 +20,36 @@ export const mockRegroupements: Regroupement[] = [
 ];
 
 export const mockPeriodes: PeriodeEntity[] = [
-  { id: 'per-2024-01', nom: 'Janvier 2024', dateDebut: '2024-01-01', dateFin: '2024-01-31', statut: 'Cloture', createdAt: '2024-01-01T00:00:00.000Z' },
-  { id: 'per-2024-02', nom: 'Fevrier 2024', dateDebut: '2024-02-01', dateFin: '2024-02-29', statut: 'Cloture', createdAt: '2024-01-01T00:00:00.000Z' },
-  { id: 'per-2024-03', nom: 'Mars 2024', dateDebut: '2024-03-01', dateFin: '2024-03-31', statut: 'Cloture', createdAt: '2024-01-01T00:00:00.000Z' },
-  { id: 'per-2024-04', nom: 'Avril 2024', dateDebut: '2024-04-01', dateFin: '2024-04-30', statut: 'Cloture', createdAt: '2024-01-01T00:00:00.000Z' },
-  { id: 'per-2024-05', nom: 'Mai 2024', dateDebut: '2024-05-01', dateFin: '2024-05-31', statut: 'Cloture', createdAt: '2024-01-01T00:00:00.000Z' },
-  { id: 'per-2024-06', nom: 'Juin 2024', dateDebut: '2024-06-01', dateFin: '2024-06-30', statut: 'Cloture', createdAt: '2024-01-01T00:00:00.000Z' },
-  { id: 'per-2024-07', nom: 'Juillet 2024', dateDebut: '2024-07-01', dateFin: '2024-07-31', statut: 'Cloture', createdAt: '2024-01-01T00:00:00.000Z' },
-  { id: 'per-2024-08', nom: 'Aout 2024', dateDebut: '2024-08-01', dateFin: '2024-08-31', statut: 'Cloture', createdAt: '2024-01-01T00:00:00.000Z' },
-  { id: 'per-2024-09', nom: 'Septembre 2024', dateDebut: '2024-09-01', dateFin: '2024-09-30', statut: 'Cloture', createdAt: '2024-01-01T00:00:00.000Z' },
-  { id: 'per-2024-10', nom: 'Octobre 2024', dateDebut: '2024-10-01', dateFin: '2024-10-31', statut: 'EnCours', createdAt: '2024-01-01T00:00:00.000Z' },
-  { id: 'per-2024-11', nom: 'Novembre 2024', dateDebut: '2024-11-01', dateFin: '2024-11-30', statut: 'Ouvert', createdAt: '2024-01-01T00:00:00.000Z' },
-  { id: 'per-2024-12', nom: 'Decembre 2024', dateDebut: '2024-12-01', dateFin: '2024-12-31', statut: 'Ouvert', createdAt: '2024-01-01T00:00:00.000Z' },
+  { id: 'per-2024-01', label: 'Janvier 2024', year: 2024, month: 1, startDate: '2024-01-01', endDate: '2024-01-31', isClosed: true },
+  { id: 'per-2024-02', label: 'Fevrier 2024', year: 2024, month: 2, startDate: '2024-02-01', endDate: '2024-02-29', isClosed: true },
+  { id: 'per-2024-03', label: 'Mars 2024', year: 2024, month: 3, startDate: '2024-03-01', endDate: '2024-03-31', isClosed: true },
+  { id: 'per-2024-04', label: 'Avril 2024', year: 2024, month: 4, startDate: '2024-04-01', endDate: '2024-04-30', isClosed: true },
+  { id: 'per-2024-05', label: 'Mai 2024', year: 2024, month: 5, startDate: '2024-05-01', endDate: '2024-05-31', isClosed: true },
+  { id: 'per-2024-06', label: 'Juin 2024', year: 2024, month: 6, startDate: '2024-06-01', endDate: '2024-06-30', isClosed: true },
+  { id: 'per-2024-07', label: 'Juillet 2024', year: 2024, month: 7, startDate: '2024-07-01', endDate: '2024-07-31', isClosed: true },
+  { id: 'per-2024-08', label: 'Aout 2024', year: 2024, month: 8, startDate: '2024-08-01', endDate: '2024-08-31', isClosed: true },
+  { id: 'per-2024-09', label: 'Septembre 2024', year: 2024, month: 9, startDate: '2024-09-01', endDate: '2024-09-30', isClosed: true },
+  { id: 'per-2024-10', label: 'Octobre 2024', year: 2024, month: 10, startDate: '2024-10-01', endDate: '2024-10-31', isClosed: false },
+  { id: 'per-2024-11', label: 'Novembre 2024', year: 2024, month: 11, startDate: '2024-11-01', endDate: '2024-11-30', isClosed: false },
+  { id: 'per-2024-12', label: 'Decembre 2024', year: 2024, month: 12, startDate: '2024-12-01', endDate: '2024-12-31', isClosed: false },
 ];
 
 export const mockPlans: PlanTresorerieEntity[] = [
   {
     id: 'plan-2024',
-    nom: 'Plan Annuel 2024',
-    periodeId: 'per-2024-01',
-    statut: 'Valide',
+    label: 'Plan Annuel 2024',
+    year: 2024,
+    periodeIds: ['per-2024-01', 'per-2024-02', 'per-2024-03', 'per-2024-04', 'per-2024-05', 'per-2024-06', 'per-2024-07', 'per-2024-08', 'per-2024-09', 'per-2024-10', 'per-2024-11', 'per-2024-12'],
+    status: 'Active',
     createdAt: '2024-01-05T08:00:00.000Z',
-    updatedAt: '2024-10-01T10:30:00.000Z',
   },
   {
     id: 'plan-2025',
-    nom: 'Plan Annuel 2025',
-    periodeId: 'per-2024-12',
-    statut: 'Brouillon',
+    label: 'Plan Annuel 2025',
+    year: 2025,
+    periodeIds: [],
+    status: 'Draft',
     createdAt: '2024-11-15T09:00:00.000Z',
-    updatedAt: '2024-11-20T14:00:00.000Z',
   },
 ];
 
