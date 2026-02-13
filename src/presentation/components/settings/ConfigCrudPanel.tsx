@@ -174,7 +174,7 @@ function ConfigCrudPanelInner<T extends { id: string }>({
           </div>
           <div>
             <h3 className="text-lg font-black text-zinc-900 dark:text-white tracking-tight">
-              Configuration Expert
+              Configuration {title}
             </h3>
             {selectedItem && (
               <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">

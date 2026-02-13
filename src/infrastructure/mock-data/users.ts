@@ -44,7 +44,7 @@ export const mockUsers: UserEntity[] = [
     phone: '+225 07 00 00 03',
     role: 'Direction',
     profileId: '3',
-    status: 'Inactive',
+    status: 'Active',
     lastLogin: 'Il y a 2 jours',
     avatar: 'https://picsum.photos/100/100?u=3',
     createdAt: '2023-02-10',

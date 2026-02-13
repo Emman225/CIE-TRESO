@@ -76,7 +76,7 @@ function DataTableInner<T extends Record<string, any>>({
       <div className="overflow-x-auto">
         <table className="w-full text-left">
           <thead>
-            <tr className="bg-zinc-50 dark:bg-zinc-800/50 text-zinc-400 text-[10px] font-black uppercase tracking-widest">
+            <tr className="bg-zinc-950 text-white text-[10px] font-black uppercase tracking-widest">
               {columns.map((col) => (
                 <th
                   key={col.key}

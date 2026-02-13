@@ -49,7 +49,7 @@ const MOCK_NOTIFICATIONS: Notification[] = [
   },
   {
     id: 'NOTIF-003',
-    title: 'Seuil de tresorerie critique',
+    title: 'Seuil de trésorerie critique',
     message: 'Le solde du compte BIAO CI (Courant) est passe sous le seuil de 10 milliards FCFA. Solde actuel: 8 750 000 000 FCFA.',
     type: 'alert',
     severity: 'critical',

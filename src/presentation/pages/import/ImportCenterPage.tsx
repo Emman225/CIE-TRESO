@@ -4,7 +4,6 @@ import { Stepper } from '@/presentation/components/ui/Stepper';
 import { Badge } from '@/presentation/components/ui/Badge';
 import { configRepository } from '@/infrastructure/di/container';
 import type { ImportHistory } from '@/shared/types';
-import type { PeriodeEntity } from '@/domain/entities/Periode';
 import type { PlanEntity } from '@/domain/entities/PlanTresorerie';
 
 const steps = [
@@ -15,7 +14,7 @@ const steps = [
   { id: 5, label: 'Integration', icon: 'verified' },
 ];
 
-const fileTypes = ['Encaissement', 'Decaissement', 'Frais Bancaire'] as const;
+const fileTypes = ['Energie', 'REM CIE', 'Fonctionnement', 'Service Bancaire', 'Import', 'Annexe', 'Gaz'] as const;
 
 interface ImportRow {
   id: number; date: string; libelle: string; montant: string; reference: string; isValid: boolean; excluded: boolean; errors: string[];
@@ -47,27 +46,21 @@ const ImportCenterPage: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [selectedFileType, setSelectedFileType] = useState<string>('Encaissement');
-  const [selectedPeriod, setSelectedPeriod] = useState('3');
+  const [selectedFileType, setSelectedFileType] = useState<string>('Energie');
   const [selectedPlan, setSelectedPlan] = useState('1');
-  const [periodes, setPeriodes] = useState<PeriodeEntity[]>([]);
   const [plans, setPlans] = useState<PlanEntity[]>([]);
 
   useEffect(() => {
     const loadData = async () => {
-      const [p, pl] = await Promise.all([
-        configRepository.getPeriodes(),
-        configRepository.getPlans(),
-      ]);
-      setPeriodes(p);
+      const pl = await configRepository.getPlans();
       setPlans(pl);
-      if (p.length > 2) setSelectedPeriod(p[2].id);
       if (pl.length > 0) setSelectedPlan(pl[0].id);
     };
     loadData();
   }, []);
   const [fileName, setFileName] = useState<string | null>(null);
   const [importRows, setImportRows] = useState<ImportRow[]>(mockRows);
+  const [showHistory, setShowHistory] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleNext = () => { if (currentStep < 5) setCurrentStep(s => s + 1); };
@@ -105,39 +98,37 @@ const ImportCenterPage: React.FC = () => {
           <div className="space-y-8">
             <div>
               <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-4">Type de donnee</p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {fileTypes.map(type => (
+              <div className="grid grid-cols-4 md:grid-cols-7 gap-3">
+                {fileTypes.map(type => {
+                  const icons: Record<string, string> = {
+                    'Energie': 'bolt',
+                    'REM CIE': 'receipt_long',
+                    'Fonctionnement': 'settings',
+                    'Service Bancaire': 'account_balance',
+                    'Import': 'download_for_offline',
+                    'Annexe': 'attach_file',
+                    'Gaz': 'local_fire_department',
+                  };
+                  return (
                   <button key={type} onClick={() => setSelectedFileType(type)}
-                    className={`p-6 border-2 rounded-2xl text-left transition-all hover:border-[#e65000]/50 hover:bg-[#e65000]/5 ${
+                    className={`px-3 py-4 border-2 rounded-2xl text-center transition-all hover:border-[#e65000]/50 hover:bg-[#e65000]/5 ${
                       selectedFileType === type ? 'border-[#e65000] bg-[#e65000]/5 shadow-inner' : 'border-zinc-100 dark:border-zinc-800'
                     }`}>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className={`material-symbols-outlined ${selectedFileType === type ? 'text-[#e65000]' : 'text-zinc-400'}`}>
-                        {type === 'Encaissement' ? 'download_for_offline' : type === 'Decaissement' ? 'upload_file' : 'account_balance'}
-                      </span>
-                      {selectedFileType === type && <span className="material-symbols-outlined text-[#e65000]">check_circle</span>}
-                    </div>
-                    <p className="font-bold text-zinc-900 dark:text-white">{type}</p>
-                    <p className="text-xs text-zinc-500 mt-1">Donnees structurees pour integration directe.</p>
+                    <span className={`material-symbols-outlined block mx-auto mb-2 ${selectedFileType === type ? 'text-[#e65000]' : 'text-zinc-400'}`}>
+                      {icons[type] || 'description'}
+                    </span>
+                    <p className="font-bold text-zinc-900 dark:text-white text-xs whitespace-nowrap">{type}</p>
                   </button>
-                ))}
+                  );
+                })}
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Periode</label>
-                <select value={selectedPeriod} onChange={e => setSelectedPeriod(e.target.value)}
-                  className="w-full h-12 px-4 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl text-sm font-bold">
-                  {periodes.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Plan</label>
-                <select value={selectedPlan} onChange={e => setSelectedPlan(e.target.value)}
-                  className="w-full h-12 px-4 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl text-sm font-bold">
-                  {plans.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
-                </select>
-              </div>
+            <div className="space-y-2 max-w-md">
+              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Plan</label>
+              <select value={selectedPlan} onChange={e => setSelectedPlan(e.target.value)}
+                className="w-full h-12 px-4 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl text-sm font-bold">
+                {plans.map(p => <option key={p.id} value={p.id}>{p.label.replace(/^Plan\s*/i, '')}</option>)}
+              </select>
             </div>
             <div className="flex justify-end">
               <button onClick={handleNext} className="px-10 py-3 bg-[#e65000] text-white font-black rounded-xl shadow-lg shadow-[#e65000]/20 hover:scale-105 active:scale-95 transition-all">
@@ -185,7 +176,7 @@ const ImportCenterPage: React.FC = () => {
           <div className="space-y-6">
             <div className="flex justify-between items-center mb-6">
               <h4 className="font-black text-zinc-900 dark:text-white uppercase tracking-tight">Configuration du Mapping</h4>
-              <span className="text-xs font-bold text-green-600 bg-green-100 px-3 py-1 rounded-full">Fichier detecte : {fileName}</span>
+              <span className="text-xs font-bold text-[#22a84c] bg-[#22a84c]/10 px-3 py-1 rounded-full">Fichier detecte : {fileName}</span>
             </div>
             <div className="space-y-3">
               {[
@@ -268,7 +259,7 @@ const ImportCenterPage: React.FC = () => {
             <div className="overflow-x-auto rounded-2xl border border-zinc-200 dark:border-zinc-800">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="bg-zinc-50 dark:bg-zinc-800/50 text-zinc-400 text-[10px] font-black uppercase tracking-widest">
+                  <tr className="bg-zinc-950 text-white text-[10px] font-black uppercase tracking-widest">
                     <th className="px-4 py-3">Statut</th>
                     <th className="px-4 py-3">Date</th>
                     <th className="px-4 py-3">Libelle</th>
@@ -284,7 +275,7 @@ const ImportCenterPage: React.FC = () => {
                         {row.excluded ? (
                           <span className="material-symbols-outlined text-zinc-400 text-lg">block</span>
                         ) : row.isValid ? (
-                          <span className="material-symbols-outlined text-green-500 text-lg">check_circle</span>
+                          <span className="material-symbols-outlined text-[#22a84c] text-lg">check_circle</span>
                         ) : (
                           <span className="material-symbols-outlined text-red-500 text-lg">error</span>
                         )}
@@ -296,7 +287,7 @@ const ImportCenterPage: React.FC = () => {
                       <td className="px-4 py-3 text-center">
                         <button onClick={() => toggleRowExclusion(row.id)}
                           className={`px-3 py-1 rounded-lg text-[10px] font-black transition-colors ${
-                            row.excluded ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-zinc-100 text-zinc-500 hover:bg-red-100 hover:text-red-700'
+                            row.excluded ? 'bg-[#22a84c]/10 text-[#22a84c] hover:bg-[#22a84c]/20' : 'bg-zinc-100 text-zinc-500 hover:bg-red-100 hover:text-red-700'
                           }`}>
                           {row.excluded ? 'INCLURE' : 'EXCLURE'}
                         </button>
@@ -324,7 +315,7 @@ const ImportCenterPage: React.FC = () => {
       case 5:
         return (
           <div className="text-center py-12 space-y-8">
-            <div className="size-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto shadow-xl shadow-green-500/10">
+            <div className="size-24 bg-[#22a84c]/10 text-[#22a84c] rounded-full flex items-center justify-center mx-auto shadow-xl shadow-[#22a84c]/10">
               <span className="material-symbols-outlined text-5xl filled">verified</span>
             </div>
             <div>
@@ -333,7 +324,7 @@ const ImportCenterPage: React.FC = () => {
             </div>
             <div className="bg-zinc-50 dark:bg-zinc-800/50 p-6 rounded-2xl border border-zinc-100 dark:border-zinc-800 max-w-md mx-auto text-left space-y-3">
               <div className="flex justify-between text-xs font-bold"><span className="text-zinc-400 uppercase">Volume Total</span><span className="text-zinc-900 dark:text-white">1.25B FCFA</span></div>
-              <div className="flex justify-between text-xs font-bold"><span className="text-zinc-400 uppercase">Periode</span><span className="text-zinc-900 dark:text-white">{periodes.find(p => p.id === selectedPeriod)?.label}</span></div>
+              <div className="flex justify-between text-xs font-bold"><span className="text-zinc-400 uppercase">Plan</span><span className="text-zinc-900 dark:text-white">{plans.find(p => p.id === selectedPlan)?.label}</span></div>
               <div className="flex justify-between text-xs font-bold"><span className="text-zinc-400 uppercase">Type</span><span className="text-zinc-900 dark:text-white">{selectedFileType}</span></div>
             </div>
             <div className="flex justify-center gap-4 pt-4">
@@ -353,13 +344,13 @@ const ImportCenterPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto pb-12">
+    <div className="space-y-8 pb-12">
       {/* Toasts */}
       {toasts.length > 0 && (
         <div className="fixed top-4 right-4 z-[100] space-y-2 max-w-sm">
           {toasts.map(t => (
             <div key={t.id} className={`p-4 rounded-2xl shadow-xl border text-sm font-bold ${
-              t.type === 'success' ? 'bg-green-50 border-green-200 text-green-800' : 'bg-red-50 border-red-200 text-red-800'
+              t.type === 'success' ? 'bg-[#22a84c]/5 border-[#22a84c]/30 text-[#22a84c]' : 'bg-red-50 border-red-200 text-red-800'
             }`}>
               <p className="font-black text-xs uppercase tracking-wider">{t.title}</p>
               {t.message && <p className="mt-1 text-xs opacity-80">{t.message}</p>}
@@ -370,7 +361,7 @@ const ImportCenterPage: React.FC = () => {
 
       <div className="flex flex-col gap-2">
         <h2 className="text-3xl font-black text-zinc-900 dark:text-white tracking-tight">Centre d'Importation</h2>
-        <p className="text-zinc-500 font-medium">Alimentez le plan de tresorerie en important vos releves bancaires ou fichiers Excel.</p>
+        <p className="text-zinc-500 font-medium">Alimentez le plan de trésorerie en important vos releves bancaires ou fichiers Excel.</p>
       </div>
 
       <Stepper steps={steps} currentStep={currentStep} />
@@ -381,40 +372,52 @@ const ImportCenterPage: React.FC = () => {
 
       {/* History */}
       <div className="space-y-4">
-        <h3 className="text-xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-          <span className="material-symbols-outlined text-[#e65000]">history</span>
-          Historique des imports
-        </h3>
-        <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm overflow-hidden">
-          <table className="w-full text-left">
-            <thead className="bg-zinc-50 dark:bg-zinc-800/50 text-zinc-400 text-[10px] font-black uppercase tracking-widest">
-              <tr>
-                <th className="px-8 py-4">Date & Heure</th>
-                <th className="px-8 py-4">Fichier Source</th>
-                <th className="px-8 py-4">Rubrique</th>
-                <th className="px-8 py-4">Statut</th>
-                <th className="px-8 py-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800 text-sm">
-              {mockHistory.map(item => (
-                <tr key={item.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/20 transition-colors">
-                  <td className="px-8 py-5 text-zinc-500 font-medium">{item.date}</td>
-                  <td className="px-8 py-5 font-bold text-zinc-900 dark:text-white">{item.filename}</td>
-                  <td className="px-8 py-5 text-zinc-500 font-medium">{item.type}</td>
-                  <td className="px-8 py-5">
-                    <Badge variant={item.status === 'Validated' ? 'success' : item.status === 'Pending' ? 'warning' : 'error'}>
-                      {item.status === 'Validated' ? 'Succes' : item.status === 'Pending' ? 'Attente' : 'Erreur'}
-                    </Badge>
-                  </td>
-                  <td className="px-8 py-5 text-right">
-                    <button className="material-symbols-outlined text-zinc-400 hover:text-[#e65000] transition-colors">download</button>
-                    <button className="material-symbols-outlined text-zinc-400 hover:text-red-500 transition-colors ml-4">delete</button>
-                  </td>
+        <button
+          onClick={() => setShowHistory(!showHistory)}
+          className="w-full flex items-center justify-between px-6 py-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm hover:border-[#e65000]/30 transition-all"
+        >
+          <div className="flex items-center gap-3">
+            <span className="material-symbols-outlined text-[#e65000]">history</span>
+            <h3 className="text-lg font-bold text-zinc-900 dark:text-white">Historique des imports</h3>
+            <span className="text-xs font-black text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 rounded-full">{mockHistory.length}</span>
+          </div>
+          <span className={`material-symbols-outlined text-zinc-400 transition-transform duration-300 ${showHistory ? 'rotate-180' : ''}`}>
+            expand_more
+          </span>
+        </button>
+
+        <div className={`overflow-hidden transition-all duration-300 ease-in-out ${showHistory ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+          <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm overflow-hidden">
+            <table className="w-full text-left">
+              <thead className="bg-zinc-950 text-white text-[10px] font-black uppercase tracking-widest">
+                <tr>
+                  <th className="px-8 py-4">Date & Heure</th>
+                  <th className="px-8 py-4">Fichier Source</th>
+                  <th className="px-8 py-4">Rubrique</th>
+                  <th className="px-8 py-4">Statut</th>
+                  <th className="px-8 py-4 text-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800 text-sm">
+                {mockHistory.map(item => (
+                  <tr key={item.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/20 transition-colors">
+                    <td className="px-8 py-5 text-zinc-500 font-medium">{item.date}</td>
+                    <td className="px-8 py-5 font-bold text-zinc-900 dark:text-white">{item.filename}</td>
+                    <td className="px-8 py-5 text-zinc-500 font-medium">{item.type}</td>
+                    <td className="px-8 py-5">
+                      <Badge variant={item.status === 'Validated' ? 'success' : item.status === 'Pending' ? 'warning' : 'error'}>
+                        {item.status === 'Validated' ? 'Succes' : item.status === 'Pending' ? 'Attente' : 'Erreur'}
+                      </Badge>
+                    </td>
+                    <td className="px-8 py-5 text-right">
+                      <button className="material-symbols-outlined text-zinc-400 hover:text-[#e65000] transition-colors">download</button>
+                      <button className="material-symbols-outlined text-zinc-400 hover:text-red-500 transition-colors ml-4">delete</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

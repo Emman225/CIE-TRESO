@@ -56,5 +56,4 @@ export const mockPlans: PlanTresorerieEntity[] = [
 export const mockPoles: Pole[] = [
   { id: '1', label: 'CIE', code: 'CIE', responsibleUserId: '1', isActive: true },
   { id: '2', label: 'CI Energie', code: 'CI_ENE', responsibleUserId: '2', isActive: true },
-  { id: '3', label: 'SODECI', code: 'SODECI', responsibleUserId: '4', isActive: true },
 ];

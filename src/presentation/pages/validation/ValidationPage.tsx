@@ -1,9 +1,12 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import * as XLSX from 'xlsx';
 import { Badge } from '@/presentation/components/ui/Badge';
 import { Button } from '@/presentation/components/ui/Button';
 import { DataTable } from '@/presentation/components/ui/DataTable';
 import { SkeletonTable, SkeletonMetricCard } from '@/presentation/components/ui/Skeleton';
 import { useToast } from '@/presentation/hooks/useToast';
+import { configRepository } from '@/infrastructure/di/container';
+import type { PlanEntity } from '@/domain/entities/PlanTresorerie';
 
 // ============ Types ============
 type ValidationStatus = 'pending' | 'approved' | 'rejected';
@@ -165,6 +168,7 @@ const ValidationPage: React.FC = () => {
       setEntries(MOCK_VALIDATION_ENTRIES);
       setIsLoading(false);
     }, 800);
+    configRepository.getPlans().then(setPlans);
     return () => clearTimeout(timer);
   }, []);
   const [filterStatus, setFilterStatus] = useState<string>('pending');
@@ -174,6 +178,9 @@ const ValidationPage: React.FC = () => {
   const [showRejectModal, setShowRejectModal] = useState<string | null>(null);
   const [rejectComment, setRejectComment] = useState('');
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const [plans, setPlans] = useState<PlanEntity[]>([]);
+  const [filterPlan, setFilterPlan] = useState<string>('all');
+  const [detailEntry, setDetailEntry] = useState<ValidationEntry | null>(null);
 
   // Stats
   const stats = useMemo(() => {
@@ -230,6 +237,28 @@ const ValidationPage: React.FC = () => {
     setShowRejectModal(null);
     setRejectComment('');
     addToast({ type: 'warning', title: 'Ecriture rejetee', message: `L'ecriture ${id} a ete rejetee.` });
+  };
+
+  const handleExport = () => {
+    const rows = filteredEntries.map((e) => ({
+      Reference: e.reference,
+      Date: e.date,
+      Tiers: e.entity,
+      Type: e.direction,
+      Categorie: e.category,
+      'Montant (FCFA)': e.amount,
+      'Soumis par': e.submittedBy,
+      'Date soumission': e.submittedAt,
+      Statut: e.status === 'pending' ? 'En attente' : e.status === 'approved' ? 'Approuve' : 'Rejete',
+      Pole: e.pole,
+      Commentaire: e.comment || '',
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Validations');
+    XLSX.writeFile(wb, 'Validation_Ecritures_Export.xlsx');
+    addToast({ type: 'success', title: 'Export reussi', message: 'Le fichier Excel a ete telecharge.' });
   };
 
   const handleBulkApprove = async () => {
@@ -318,7 +347,7 @@ const ValidationPage: React.FC = () => {
       render: (entry: ValidationEntry) => (
         <div className="flex items-center gap-2">
           <div className={`size-8 rounded-lg flex items-center justify-center ${
-            entry.direction === 'Encaissement' ? 'bg-green-100 text-green-600 dark:bg-green-900/30' : 'bg-red-100 text-red-600 dark:bg-red-900/30'
+            entry.direction === 'Encaissement' ? 'bg-[#22a84c]/10 text-[#22a84c] dark:bg-[#22a84c]/20' : 'bg-red-100 text-red-600 dark:bg-red-900/30'
           }`}>
             <span className="material-symbols-outlined text-base">
               {entry.direction === 'Encaissement' ? 'south_west' : 'north_east'}
@@ -341,7 +370,7 @@ const ValidationPage: React.FC = () => {
       sortable: true,
       render: (entry: ValidationEntry) => (
         <span className={`text-sm font-black ${
-          entry.direction === 'Encaissement' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+          entry.direction === 'Encaissement' ? 'text-[#22a84c] dark:text-[#2ec45a]' : 'text-red-600 dark:text-red-400'
         }`}>
           {entry.direction === 'Encaissement' ? '+' : '-'}{formatCFA(entry.amount)}
         </span>
@@ -371,31 +400,41 @@ const ValidationPage: React.FC = () => {
     {
       key: 'actions',
       label: 'Actions',
-      render: (entry: ValidationEntry) =>
-        entry.status === 'pending' ? (
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => handleApprove(entry.id)}
-              disabled={processingId === entry.id}
-              className="p-2 rounded-lg bg-green-100 text-green-600 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-900/50 transition-all active:scale-90 disabled:opacity-50"
-              title="Approuver"
-            >
-              <span className="material-symbols-outlined text-lg">check_circle</span>
-            </button>
-            <button
-              onClick={() => setShowRejectModal(entry.id)}
-              disabled={processingId === entry.id}
-              className="p-2 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 transition-all active:scale-90 disabled:opacity-50"
-              title="Rejeter"
-            >
-              <span className="material-symbols-outlined text-lg">cancel</span>
-            </button>
-          </div>
-        ) : (
-          <span className="text-[10px] text-zinc-400 font-medium italic max-w-[160px] block truncate">
-            {entry.comment}
-          </span>
-        ),
+      render: (entry: ValidationEntry) => (
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setDetailEntry(entry)}
+            className="p-2 rounded-lg bg-zinc-100 text-zinc-500 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 transition-all active:scale-90"
+            title="Voir détails"
+          >
+            <span className="material-symbols-outlined text-lg">visibility</span>
+          </button>
+          {entry.status === 'pending' ? (
+            <>
+              <button
+                onClick={() => handleApprove(entry.id)}
+                disabled={processingId === entry.id}
+                className="p-2 rounded-lg bg-[#22a84c]/10 text-[#22a84c] hover:bg-[#22a84c]/20 dark:bg-[#22a84c]/20 dark:hover:bg-[#22a84c]/30 transition-all active:scale-90 disabled:opacity-50"
+                title="Approuver"
+              >
+                <span className="material-symbols-outlined text-lg">check_circle</span>
+              </button>
+              <button
+                onClick={() => setShowRejectModal(entry.id)}
+                disabled={processingId === entry.id}
+                className="p-2 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 transition-all active:scale-90 disabled:opacity-50"
+                title="Rejeter"
+              >
+                <span className="material-symbols-outlined text-lg">cancel</span>
+              </button>
+            </>
+          ) : (
+            <span className="text-[10px] text-zinc-400 font-medium italic max-w-[140px] block truncate">
+              {entry.comment}
+            </span>
+          )}
+        </div>
+      ),
     },
   ];
 
@@ -408,19 +447,24 @@ const ValidationPage: React.FC = () => {
             Validation des Ecritures
           </h1>
           <p className="text-sm text-zinc-500 font-semibold mt-1">
-            Approbation et controle des operations de tresorerie
+            Approbation et controle des operations de trésorerie
           </p>
         </div>
-        {selectedIds.size > 0 && (
-          <Button
-            variant="primary"
-            size="md"
-            icon="done_all"
-            onClick={handleBulkApprove}
-          >
-            Approuver la selection ({selectedIds.size})
+        <div className="flex items-center gap-3">
+          <Button variant="outline" size="sm" icon="download" onClick={handleExport}>
+            Exporter
           </Button>
-        )}
+          {selectedIds.size > 0 && (
+            <Button
+              variant="primary"
+              size="md"
+              icon="done_all"
+              onClick={handleBulkApprove}
+            >
+              Approuver la selection ({selectedIds.size})
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -434,7 +478,7 @@ const ValidationPage: React.FC = () => {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
             { label: 'En attente', value: stats.pending, icon: 'hourglass_top', color: '#f59e0b', bg: 'bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800/30' },
-            { label: 'Approuvees', value: stats.approved, icon: 'verified', color: '#22c55e', bg: 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800/30' },
+            { label: 'Approuvees', value: stats.approved, icon: 'verified', color: '#22a84c', bg: 'bg-[#22a84c]/5 dark:bg-[#22a84c]/10 border-[#22a84c]/30 dark:border-[#22a84c]/20' },
             { label: 'Rejetees', value: stats.rejected, icon: 'block', color: '#ef4444', bg: 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800/30' },
             { label: 'Montant en attente', value: null, displayValue: formatCFA(stats.totalPending), icon: 'account_balance_wallet', color: '#e65000', bg: 'bg-primary/5 border-primary/20' },
           ].map((stat) => (
@@ -460,7 +504,7 @@ const ValidationPage: React.FC = () => {
 
       {/* Filters */}
       <div className="bg-white dark:bg-zinc-900 rounded-[24px] border border-zinc-200 dark:border-zinc-800 p-5">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {/* Search */}
           <div className="lg:col-span-2 relative">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">
@@ -496,6 +540,18 @@ const ValidationPage: React.FC = () => {
             <option value="all">Tous les types</option>
             <option value="Encaissement">Encaissements</option>
             <option value="Decaissement">Decaissements</option>
+          </select>
+
+          {/* Filter Plan */}
+          <select
+            value={filterPlan}
+            onChange={(e) => setFilterPlan(e.target.value)}
+            className="py-2.5 px-4 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-bold text-zinc-700 dark:text-zinc-300 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+          >
+            <option value="all">Tous les plans</option>
+            {plans.map((p) => (
+              <option key={p.id} value={p.id}>{p.label.replace(/^Plan\s*/i, '')}</option>
+            ))}
           </select>
         </div>
       </div>
@@ -561,6 +617,154 @@ const ValidationPage: React.FC = () => {
                   Confirmer le rejet
                 </Button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Detail Modal */}
+      {detailEntry && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-zinc-900 rounded-[28px] border border-zinc-200 dark:border-zinc-800 shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-zinc-200 dark:border-zinc-800">
+              <div className="flex items-center gap-3">
+                <div className={`size-12 rounded-2xl flex items-center justify-center ${
+                  detailEntry.status === 'pending' ? 'bg-amber-100 dark:bg-amber-900/30' :
+                  detailEntry.status === 'approved' ? 'bg-[#22a84c]/10 dark:bg-[#22a84c]/20' :
+                  'bg-red-100 dark:bg-red-900/30'
+                }`}>
+                  <span className={`material-symbols-outlined text-2xl ${
+                    detailEntry.status === 'pending' ? 'text-amber-600' :
+                    detailEntry.status === 'approved' ? 'text-[#22a84c]' :
+                    'text-red-600'
+                  }`}>
+                    {detailEntry.status === 'pending' ? 'hourglass_top' : detailEntry.status === 'approved' ? 'verified' : 'block'}
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-zinc-900 dark:text-white">Detail de l'ecriture</h3>
+                  <p className="text-xs text-zinc-500 font-bold">{detailEntry.reference}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setDetailEntry(null)}
+                className="p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 space-y-6">
+              {/* Status + Type */}
+              <div className="flex items-center gap-3">
+                {statusBadge(detailEntry.status)}
+                <Badge variant={detailEntry.direction === 'Encaissement' ? 'success' : 'error'}>
+                  {detailEntry.direction}
+                </Badge>
+              </div>
+
+              {/* Amount */}
+              <div className="bg-zinc-50 dark:bg-zinc-800 rounded-xl p-4 text-center">
+                <p className="text-xs font-bold text-zinc-500 uppercase mb-1">Montant</p>
+                <p className={`text-3xl font-black ${
+                  detailEntry.direction === 'Encaissement' ? 'text-[#22a84c]' : 'text-red-600'
+                }`}>
+                  {detailEntry.direction === 'Encaissement' ? '+' : '-'}{formatCFA(detailEntry.amount)}
+                </p>
+              </div>
+
+              {/* Details Grid */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs font-bold text-zinc-500 uppercase mb-1">Date</p>
+                  <p className="font-medium text-zinc-900 dark:text-white">{detailEntry.date}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-zinc-500 uppercase mb-1">Tiers</p>
+                  <p className="font-medium text-zinc-900 dark:text-white">{detailEntry.entity}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-zinc-500 uppercase mb-1">Categorie</p>
+                  <p className="font-medium text-zinc-900 dark:text-white">{detailEntry.category}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-zinc-500 uppercase mb-1">Pole</p>
+                  <p className="font-medium text-zinc-900 dark:text-white">{detailEntry.pole}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-zinc-500 uppercase mb-1">Soumis par</p>
+                  <p className="font-medium text-zinc-900 dark:text-white">{detailEntry.submittedBy}</p>
+                  <p className="text-xs text-zinc-400">{detailEntry.submittedAt}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-zinc-500 uppercase mb-1">Reference</p>
+                  <p className="font-medium font-mono text-zinc-900 dark:text-white">{detailEntry.reference}</p>
+                </div>
+              </div>
+
+              {/* Comment / Blockage detail */}
+              {detailEntry.comment && (
+                <div className={`p-4 rounded-xl border ${
+                  detailEntry.status === 'rejected'
+                    ? 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800/30'
+                    : 'bg-[#22a84c]/5 dark:bg-[#22a84c]/10 border-[#22a84c]/30 dark:border-[#22a84c]/20'
+                }`}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className={`material-symbols-outlined text-lg ${
+                      detailEntry.status === 'rejected' ? 'text-red-600' : 'text-[#22a84c]'
+                    }`}>
+                      {detailEntry.status === 'rejected' ? 'error' : 'check_circle'}
+                    </span>
+                    <p className="text-xs font-black uppercase tracking-widest text-zinc-500">
+                      {detailEntry.status === 'rejected' ? 'Motif du rejet' : 'Commentaire de validation'}
+                    </p>
+                  </div>
+                  <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{detailEntry.comment}</p>
+                </div>
+              )}
+
+              {detailEntry.status === 'pending' && (
+                <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="material-symbols-outlined text-lg text-amber-600">hourglass_top</span>
+                    <p className="text-xs font-black uppercase tracking-widest text-zinc-500">En attente de validation</p>
+                  </div>
+                  <p className="text-sm font-medium text-amber-700 dark:text-amber-300">
+                    Cette ecriture est en attente d'approbation par un valideur habilite.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-end gap-3 p-6 border-t border-zinc-200 dark:border-zinc-800">
+              {detailEntry.status === 'pending' && (
+                <>
+                  <Button
+                    variant="danger"
+                    size="md"
+                    icon="cancel"
+                    onClick={() => { setDetailEntry(null); setShowRejectModal(detailEntry.id); }}
+                  >
+                    Rejeter
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="md"
+                    icon="check_circle"
+                    onClick={() => { handleApprove(detailEntry.id); setDetailEntry(null); }}
+                  >
+                    Approuver
+                  </Button>
+                </>
+              )}
+              {detailEntry.status !== 'pending' && (
+                <Button variant="outline" size="md" onClick={() => setDetailEntry(null)}>
+                  Fermer
+                </Button>
+              )}
             </div>
           </div>
         </div>

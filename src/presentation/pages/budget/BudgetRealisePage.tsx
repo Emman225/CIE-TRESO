@@ -1,6 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/presentation/components/ui/Button';
 import { DateRangePicker } from '@/presentation/components/ui/DateRangePicker';
+import { configRepository } from '@/infrastructure/di/container';
+import type { PlanEntity } from '@/domain/entities/PlanTresorerie';
 import {
   BarChart,
   Bar,
@@ -188,6 +190,12 @@ const BudgetRealisePage: React.FC = () => {
   const [selectedType, setSelectedType] = useState<'all' | CategoryType>('all');
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [viewMode, setViewMode] = useState<'table' | 'chart'>('table');
+  const [plans, setPlans] = useState<PlanEntity[]>([]);
+  const [selectedPlanId, setSelectedPlanId] = useState<string>('all');
+
+  useEffect(() => {
+    configRepository.getPlans().then(setPlans);
+  }, []);
 
   // Filter budget lines
   const filteredLines = useMemo(() => {
@@ -240,19 +248,19 @@ const BudgetRealisePage: React.FC = () => {
   const getStatusColor = (status: VarianceStatus, type: CategoryType): string => {
     if (status === 'neutre') return 'text-zinc-500';
     if (type === 'encaissement') {
-      return status === 'favorable' ? 'text-emerald-600' : 'text-red-600';
+      return status === 'favorable' ? 'text-[#22a84c]' : 'text-red-600';
     } else {
       // For decaissement, less spending is favorable
-      return status === 'favorable' ? 'text-emerald-600' : 'text-red-600';
+      return status === 'favorable' ? 'text-[#22a84c]' : 'text-red-600';
     }
   };
 
   const getStatusBg = (status: VarianceStatus, type: CategoryType): string => {
     if (status === 'neutre') return 'bg-zinc-100 dark:bg-zinc-800';
     if (type === 'encaissement') {
-      return status === 'favorable' ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-red-100 dark:bg-red-900/30';
+      return status === 'favorable' ? 'bg-[#22a84c]/10 dark:bg-[#22a84c]/20' : 'bg-red-100 dark:bg-red-900/30';
     } else {
-      return status === 'favorable' ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-red-100 dark:bg-red-900/30';
+      return status === 'favorable' ? 'bg-[#22a84c]/10 dark:bg-[#22a84c]/20' : 'bg-red-100 dark:bg-red-900/30';
     }
   };
 
@@ -283,6 +291,16 @@ const BudgetRealisePage: React.FC = () => {
             value={dateRange}
             onChange={(range) => setDateRange(range)}
           />
+          <select
+            value={selectedPlanId}
+            onChange={(e) => setSelectedPlanId(e.target.value)}
+            className="py-2.5 px-4 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-bold text-zinc-700 dark:text-zinc-300 focus:ring-2 focus:ring-primary/20 outline-none"
+          >
+            <option value="all">Tous les plans</option>
+            {plans.map((p) => (
+              <option key={p.id} value={p.id}>{p.label.replace(/^Plan\s*/i, '')}</option>
+            ))}
+          </select>
           <Button variant="outline" size="sm" icon="download">
             Exporter
           </Button>
@@ -297,8 +315,8 @@ const BudgetRealisePage: React.FC = () => {
             <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
               Total Encaissements
             </span>
-            <div className="size-8 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-              <span className="material-symbols-outlined text-emerald-600 text-lg">trending_up</span>
+            <div className="size-8 rounded-xl bg-[#22a84c]/10 dark:bg-[#22a84c]/20 flex items-center justify-center">
+              <span className="material-symbols-outlined text-[#22a84c] text-lg">trending_up</span>
             </div>
           </div>
           <div className="space-y-2">
@@ -312,7 +330,7 @@ const BudgetRealisePage: React.FC = () => {
             </div>
             <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 flex justify-between text-sm">
               <span className="text-zinc-500">Écart</span>
-              <span className={`font-black ${totals.encaissement.variance >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+              <span className={`font-black ${totals.encaissement.variance >= 0 ? 'text-[#22a84c]' : 'text-red-600'}`}>
                 {totals.encaissement.variance >= 0 ? '+' : ''}{formatAmount(totals.encaissement.variance)}
                 <span className="text-xs ml-1">({totals.encaissement.variancePercent.toFixed(1)}%)</span>
               </span>
@@ -341,7 +359,7 @@ const BudgetRealisePage: React.FC = () => {
             </div>
             <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 flex justify-between text-sm">
               <span className="text-zinc-500">Économie</span>
-              <span className={`font-black ${totals.decaissement.variance >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+              <span className={`font-black ${totals.decaissement.variance >= 0 ? 'text-[#22a84c]' : 'text-red-600'}`}>
                 {totals.decaissement.variance >= 0 ? '+' : ''}{formatAmount(totals.decaissement.variance)}
                 <span className="text-xs ml-1">({totals.decaissement.variancePercent.toFixed(1)}%)</span>
               </span>
@@ -362,19 +380,19 @@ const BudgetRealisePage: React.FC = () => {
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-zinc-500">Budgété</span>
-              <span className={`font-bold ${totals.solde.budget >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+              <span className={`font-bold ${totals.solde.budget >= 0 ? 'text-[#22a84c]' : 'text-red-600'}`}>
                 {formatAmount(totals.solde.budget)}
               </span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-zinc-500">Réalisé</span>
-              <span className={`font-bold ${totals.solde.real >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+              <span className={`font-bold ${totals.solde.real >= 0 ? 'text-[#22a84c]' : 'text-red-600'}`}>
                 {formatAmount(totals.solde.real)}
               </span>
             </div>
             <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 flex justify-between text-sm">
               <span className="text-zinc-500">Écart</span>
-              <span className={`font-black ${totals.solde.real - totals.solde.budget >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+              <span className={`font-black ${totals.solde.real - totals.solde.budget >= 0 ? 'text-[#22a84c]' : 'text-red-600'}`}>
                 {totals.solde.real - totals.solde.budget >= 0 ? '+' : ''}{formatAmount(totals.solde.real - totals.solde.budget)}
               </span>
             </div>
@@ -399,7 +417,7 @@ const BudgetRealisePage: React.FC = () => {
             onClick={() => setSelectedType('encaissement')}
             className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
               selectedType === 'encaissement'
-                ? 'bg-emerald-600 text-white'
+                ? 'bg-[#22a84c] text-white'
                 : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
             }`}
           >
@@ -472,7 +490,7 @@ const BudgetRealisePage: React.FC = () => {
                     )}
                     <div
                       className={`size-3 rounded-full ${
-                        line.type === 'encaissement' ? 'bg-emerald-500' : 'bg-red-500'
+                        line.type === 'encaissement' ? 'bg-[#22a84c]' : 'bg-red-500'
                       }`}
                     />
                     <span className="font-bold text-zinc-900 dark:text-white">{line.category}</span>
@@ -520,7 +538,7 @@ const BudgetRealisePage: React.FC = () => {
                           </div>
                           <div
                             className={`col-span-2 text-right text-sm font-medium ${
-                              subVariance >= 0 ? 'text-emerald-600' : 'text-red-600'
+                              subVariance >= 0 ? 'text-[#22a84c]' : 'text-red-600'
                             }`}
                           >
                             {subVariance >= 0 ? '+' : ''}{formatAmount(subVariance)}
@@ -541,7 +559,7 @@ const BudgetRealisePage: React.FC = () => {
           <div className="border-t-2 border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50">
             {selectedType !== 'decaissement' && (
               <div className="grid grid-cols-12 gap-4 px-6 py-4 items-center">
-                <div className="col-span-4 font-black text-emerald-600">Total Encaissements</div>
+                <div className="col-span-4 font-black text-[#22a84c]">Total Encaissements</div>
                 <div className="col-span-2 text-right font-bold text-zinc-700 dark:text-zinc-300">
                   {formatAmount(totals.encaissement.budget)}
                 </div>
@@ -550,12 +568,12 @@ const BudgetRealisePage: React.FC = () => {
                 </div>
                 <div
                   className={`col-span-2 text-right font-black ${
-                    totals.encaissement.variance >= 0 ? 'text-emerald-600' : 'text-red-600'
+                    totals.encaissement.variance >= 0 ? 'text-[#22a84c]' : 'text-red-600'
                   }`}
                 >
                   {totals.encaissement.variance >= 0 ? '+' : ''}{formatAmount(totals.encaissement.variance)}
                 </div>
-                <div className="col-span-2 text-right font-black text-emerald-600">
+                <div className="col-span-2 text-right font-black text-[#22a84c]">
                   {totals.encaissement.variancePercent >= 0 ? '+' : ''}{totals.encaissement.variancePercent.toFixed(1)}%
                 </div>
               </div>
@@ -571,14 +589,14 @@ const BudgetRealisePage: React.FC = () => {
                 </div>
                 <div
                   className={`col-span-2 text-right font-black ${
-                    totals.decaissement.variance >= 0 ? 'text-emerald-600' : 'text-red-600'
+                    totals.decaissement.variance >= 0 ? 'text-[#22a84c]' : 'text-red-600'
                   }`}
                 >
                   {totals.decaissement.variance >= 0 ? '+' : ''}{formatAmount(totals.decaissement.variance)}
                 </div>
                 <div
                   className={`col-span-2 text-right font-black ${
-                    totals.decaissement.variancePercent >= 0 ? 'text-emerald-600' : 'text-red-600'
+                    totals.decaissement.variancePercent >= 0 ? 'text-[#22a84c]' : 'text-red-600'
                   }`}
                 >
                   {totals.decaissement.variancePercent >= 0 ? '+' : ''}{totals.decaissement.variancePercent.toFixed(1)}%
@@ -610,7 +628,7 @@ const BudgetRealisePage: React.FC = () => {
                     {chartData.map((entry, index) => (
                       <Cell
                         key={`cell-${index}`}
-                        fill={entry.type === 'encaissement' ? '#10b981' : '#ef4444'}
+                        fill={entry.type === 'encaissement' ? '#22a84c' : '#ef4444'}
                       />
                     ))}
                   </Bar>
@@ -644,9 +662,9 @@ const BudgetRealisePage: React.FC = () => {
                     type="monotone"
                     dataKey="realEncaissement"
                     name="Réel Encaiss."
-                    stroke="#10b981"
+                    stroke="#22a84c"
                     strokeWidth={2}
-                    dot={{ fill: '#10b981' }}
+                    dot={{ fill: '#22a84c' }}
                   />
                   <Line
                     type="monotone"
@@ -679,7 +697,7 @@ const BudgetRealisePage: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Favorable variances */}
           <div className="space-y-3">
-            <h4 className="text-sm font-bold text-emerald-600 flex items-center gap-2">
+            <h4 className="text-sm font-bold text-[#22a84c] flex items-center gap-2">
               <span className="material-symbols-outlined text-lg">thumb_up</span>
               Écarts Favorables
             </h4>
@@ -688,10 +706,10 @@ const BudgetRealisePage: React.FC = () => {
               .map((line) => (
                 <div
                   key={line.id}
-                  className="flex items-center justify-between p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl"
+                  className="flex items-center justify-between p-3 bg-[#22a84c]/5 dark:bg-[#22a84c]/15 rounded-xl"
                 >
                   <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{line.category}</span>
-                  <span className="text-sm font-black text-emerald-600">
+                  <span className="text-sm font-black text-[#22a84c]">
                     +{formatAmount(Math.abs(line.variance))} ({line.variancePercent > 0 ? '+' : ''}{line.variancePercent.toFixed(1)}%)
                   </span>
                 </div>

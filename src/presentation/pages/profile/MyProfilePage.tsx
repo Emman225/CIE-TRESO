@@ -63,7 +63,7 @@ const MyProfilePage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
@@ -334,18 +334,18 @@ const MyProfilePage: React.FC = () => {
             <div
               key={idx}
               className={`flex items-center justify-between p-4 rounded-xl ${
-                session.current ? 'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800' : 'bg-zinc-50 dark:bg-zinc-800'
+                session.current ? 'bg-[#22a84c]/5 dark:bg-[#22a84c]/15 border border-[#22a84c]/30 dark:border-[#22a84c]/20' : 'bg-zinc-50 dark:bg-zinc-800'
               }`}
             >
               <div className="flex items-center gap-3">
-                <span className={`material-symbols-outlined ${session.current ? 'text-emerald-600' : 'text-zinc-400'}`}>
+                <span className={`material-symbols-outlined ${session.current ? 'text-[#22a84c]' : 'text-zinc-400'}`}>
                   {session.device.includes('iPhone') ? 'smartphone' : 'computer'}
                 </span>
                 <div>
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-bold text-zinc-900 dark:text-white">{session.device}</p>
                     {session.current && (
-                      <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 text-[10px] font-black rounded-md uppercase">
+                      <span className="px-2 py-0.5 bg-[#22a84c]/10 dark:bg-[#22a84c]/30 text-[#22a84c] dark:text-[#2ec45a] text-[10px] font-black rounded-md uppercase">
                         Session actuelle
                       </span>
                     )}

@@ -33,9 +33,9 @@ const TOAST_DURATION = 4000;
 
 const TOAST_STYLES: Record<ToastType, { bg: string; border: string; icon: string; iconText: string }> = {
   success: {
-    bg: 'bg-emerald-50 dark:bg-emerald-900/30',
-    border: 'border-emerald-400 dark:border-emerald-600',
-    icon: 'text-emerald-600 dark:text-emerald-400',
+    bg: 'bg-[#22a84c]/10 dark:bg-[#22a84c]/20',
+    border: 'border-[#22a84c] dark:border-[#2ec45a]',
+    icon: 'text-[#22a84c] dark:text-[#2ec45a]',
     iconText: '\u2713',
   },
   error: {

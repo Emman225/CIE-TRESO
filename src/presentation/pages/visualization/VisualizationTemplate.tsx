@@ -8,7 +8,6 @@ import { cashFlowRepository, configRepository } from '@/infrastructure/di/contai
 import { MetricCard } from '@/presentation/components/ui/MetricCard';
 import { AreaChartWidget } from '@/presentation/components/charts/AreaChartWidget';
 import { Card } from '@/presentation/components/ui/Card';
-import { Select } from '@/presentation/components/ui/Select';
 import { Button } from '@/presentation/components/ui/Button';
 import { formatCurrency } from '@/shared/utils/formatters';
 
@@ -238,7 +237,7 @@ const VisualizationTemplate: React.FC<VisualizationTemplateProps> = ({
   // Filtered plans based on selected periode
   const filteredPlans = useMemo(() => {
     if (!selectedPeriode) return plans;
-    return plans.filter((p) => p.periodeId === selectedPeriode);
+    return plans.filter((p) => (p.periodeIds || []).includes(selectedPeriode));
   }, [plans, selectedPeriode]);
 
   // Period options
@@ -246,7 +245,7 @@ const VisualizationTemplate: React.FC<VisualizationTemplateProps> = ({
     () =>
       periodes.map((p) => ({
         value: p.id,
-        label: p.nom,
+        label: p.label,
       })),
     [periodes]
   );
@@ -254,11 +253,11 @@ const VisualizationTemplate: React.FC<VisualizationTemplateProps> = ({
   // Plan options
   const planOptions = useMemo(
     () =>
-      filteredPlans.map((p) => ({
+      plans.map((p) => ({
         value: p.id,
-        label: p.nom,
+        label: p.label,
       })),
-    [filteredPlans]
+    [plans]
   );
 
   // Metric values
@@ -354,18 +353,30 @@ const VisualizationTemplate: React.FC<VisualizationTemplateProps> = ({
         </div>
 
         <div className="flex flex-wrap items-end gap-3">
-          <Select
-            label="Periode"
-            options={periodeOptions}
-            value={selectedPeriode}
-            onChange={(e) => setSelectedPeriode(e.target.value)}
-          />
-          <Select
-            label="Plan"
-            options={planOptions}
-            value={selectedPlan}
-            onChange={(e) => setSelectedPlan(e.target.value)}
-          />
+          <div className="space-y-1">
+            <label className="text-[10px] font-black uppercase text-zinc-400 tracking-widest block">Periode</label>
+            <select
+              value={selectedPeriode}
+              onChange={(e) => setSelectedPeriode(e.target.value)}
+              className="h-10 px-4 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-xs font-bold text-zinc-700 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-primary/20"
+            >
+              {periodeOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1">
+            <label className="text-[10px] font-black uppercase text-zinc-400 tracking-widest block">Plan</label>
+            <select
+              value={selectedPlan}
+              onChange={(e) => setSelectedPlan(e.target.value)}
+              className="h-10 px-4 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-xs font-bold text-zinc-700 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-primary/20"
+            >
+              {planOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label.replace(/^Plan\s*/i, '')}</option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
@@ -405,12 +416,12 @@ const VisualizationTemplate: React.FC<VisualizationTemplateProps> = ({
       {/* Detail Table                                                        */}
       {/* ------------------------------------------------------------------ */}
       <Card className="overflow-hidden">
-        <div className="px-6 py-5 border-b border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="px-6 py-5 border-b border-[#e65000] bg-[#e65000] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h3 className="text-sm font-black text-zinc-900 dark:text-white uppercase tracking-wider">
+            <h3 className="text-sm font-black text-white uppercase tracking-wider">
               Detail par Rubrique
             </h3>
-            <p className="text-xs text-zinc-500 font-semibold mt-0.5">
+            <p className="text-xs text-white/70 font-semibold mt-0.5">
               Decomposition mensuelle des flux - {title}
             </p>
           </div>
@@ -420,6 +431,7 @@ const VisualizationTemplate: React.FC<VisualizationTemplateProps> = ({
             size="sm"
             onClick={handleExport}
             isLoading={isExporting}
+            className="!border-white !text-white hover:!bg-white hover:!text-[#e65000]"
           >
             {isExporting ? 'Export...' : 'Exporter les donnees'}
           </Button>
@@ -429,8 +441,8 @@ const VisualizationTemplate: React.FC<VisualizationTemplateProps> = ({
           <table className="w-full text-left min-w-[1100px]">
             {/* Table Header */}
             <thead>
-              <tr className="bg-zinc-50 dark:bg-zinc-800/50 text-[10px] font-black uppercase tracking-widest text-zinc-500">
-                <th className="px-6 py-4 sticky left-0 bg-zinc-50 dark:bg-zinc-800/50 z-10 min-w-[200px]">
+              <tr className="bg-zinc-950 text-[10px] font-black uppercase tracking-widest text-white">
+                <th className="px-6 py-4 sticky left-0 bg-zinc-950 z-10 min-w-[200px]">
                   Rubrique
                 </th>
                 {MONTHS.map((m) => (

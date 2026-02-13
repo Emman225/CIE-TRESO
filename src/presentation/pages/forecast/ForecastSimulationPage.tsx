@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Button } from '@/presentation/components/ui/Button';
 import { Badge } from '@/presentation/components/ui/Badge';
 import { Tabs } from '@/presentation/components/ui/Tabs';
@@ -6,6 +6,8 @@ import { Modal } from '@/presentation/components/ui/Modal';
 import { MultiScenarioChart } from '@/presentation/components/charts/MultiScenarioChart';
 import { useToast } from '@/presentation/hooks/useToast';
 import { MONTHS_FR } from '@/shared/constants/appConfig';
+import { configRepository } from '@/infrastructure/di/container';
+import type { PlanEntity } from '@/domain/entities/PlanTresorerie';
 
 // ============ Types ============
 interface ScenarioParam {
@@ -28,26 +30,33 @@ interface Snapshot {
 
 // ============ Mock Data ============
 const INITIAL_PARAMS: ScenarioParam[] = [
-  { key: 'revenue_growth', label: 'Croissance des recettes', value: 5, min: -20, max: 30, step: 0.5, unit: '%' },
-  { key: 'expense_factor', label: 'Facteur depenses', value: 0, min: -15, max: 25, step: 0.5, unit: '%' },
-  { key: 'fuel_price', label: 'Prix combustible', value: 0, min: -30, max: 50, step: 1, unit: '%' },
-  { key: 'collection_rate', label: 'Taux de recouvrement', value: 85, min: 50, max: 100, step: 1, unit: '%' },
-  { key: 'investment', label: 'Investissements', value: 12, min: 0, max: 50, step: 0.5, unit: 'Mds' },
+  { key: 'energie', label: 'Energie', value: 5, min: -20, max: 30, step: 0.5, unit: '%' },
+  { key: 'rem_cie', label: 'REM CIE', value: 0, min: -15, max: 25, step: 0.5, unit: '%' },
+  { key: 'fonctionnement', label: 'Fonctionnement', value: 0, min: -30, max: 50, step: 1, unit: '%' },
+  { key: 'service_bancaire', label: 'Service Bancaire', value: 0, min: -20, max: 30, step: 0.5, unit: '%' },
+  { key: 'import', label: 'Import', value: 0, min: -25, max: 40, step: 1, unit: '%' },
+  { key: 'annexe', label: 'Annexe', value: 0, min: -15, max: 25, step: 0.5, unit: '%' },
+  { key: 'gaz', label: 'Gaz', value: 0, min: -30, max: 50, step: 1, unit: '%' },
 ];
 
 const BASE_VALUES = [45, 52, 48, 55, 60, 58, 63, 70, 65, 72, 68, 75];
 
 function generateScenarioData(params: ScenarioParam[]) {
-  const growthParam = params.find((p) => p.key === 'revenue_growth');
-  const expenseParam = params.find((p) => p.key === 'expense_factor');
-  const growth = (growthParam?.value || 5) / 100;
-  const expense = (expenseParam?.value || 0) / 100;
+  const getVal = (key: string) => (params.find((p) => p.key === key)?.value || 0) / 100;
+  const energie = getVal('energie');
+  const remCie = getVal('rem_cie');
+  const fonct = getVal('fonctionnement');
+  const bancaire = getVal('service_bancaire');
+  const imp = getVal('import');
+  const annexe = getVal('annexe');
+  const gaz = getVal('gaz');
+  const totalEffect = energie + remCie * 0.8 + fonct * 0.5 - bancaire * 0.3 - imp * 0.4 - annexe * 0.2 - gaz * 0.6;
 
   return MONTHS_FR.map((month, i) => ({
     month: month.substring(0, 3),
-    realistic: Math.round(BASE_VALUES[i] * (1 + growth - expense * 0.3)),
-    optimistic: Math.round(BASE_VALUES[i] * (1 + growth * 1.5 - expense * 0.15)),
-    pessimistic: Math.round(BASE_VALUES[i] * (1 + growth * 0.3 - expense * 0.6)),
+    realistic: Math.round(BASE_VALUES[i] * (1 + totalEffect * 0.7)),
+    optimistic: Math.round(BASE_VALUES[i] * (1 + totalEffect * 1.3)),
+    pessimistic: Math.round(BASE_VALUES[i] * (1 + totalEffect * 0.3)),
     baseline: BASE_VALUES[i],
   }));
 }
@@ -65,6 +74,12 @@ const ForecastSimulationPage: React.FC = () => {
   const [params, setParams] = useState<ScenarioParam[]>(INITIAL_PARAMS);
   const [activeScenario, setActiveScenario] = useState('realistic');
   const [isSimulating, setIsSimulating] = useState(false);
+  const [plans, setPlans] = useState<PlanEntity[]>([]);
+  const [selectedPlanId, setSelectedPlanId] = useState<string>('all');
+
+  useEffect(() => {
+    configRepository.getPlans().then(setPlans);
+  }, []);
 
   // Snapshot state
   const [snapshots, setSnapshots] = useState<Snapshot[]>([
@@ -113,8 +128,8 @@ const ForecastSimulationPage: React.FC = () => {
     return [
       { label: 'Solde previsionnel', value: `${values[values.length - 1]} Mds`, icon: 'account_balance', color: '#e65000' },
       { label: 'Flux net moyen', value: `${avg.toFixed(1)} Mds/mois`, icon: 'swap_vert', color: '#137fec' },
-      { label: 'Min / Max', value: `${min} / ${max} Mds`, icon: 'unfold_more', color: '#22c55e' },
-      { label: 'Tendance', value: `${trend > 0 ? '+' : ''}${trend} Mds`, icon: trend >= 0 ? 'trending_up' : 'trending_down', color: trend >= 0 ? '#22c55e' : '#ef4444' },
+      { label: 'Min / Max', value: `${min} / ${max} Mds`, icon: 'unfold_more', color: '#22a84c' },
+      { label: 'Tendance', value: `${trend > 0 ? '+' : ''}${trend} Mds`, icon: trend >= 0 ? 'trending_up' : 'trending_down', color: trend >= 0 ? '#22a84c' : '#ef4444' },
     ];
   }, [chartData, activeScenario]);
 
@@ -174,10 +189,20 @@ const ForecastSimulationPage: React.FC = () => {
             Simulation & Scenarios
           </h1>
           <p className="text-sm text-zinc-500 font-semibold mt-1">
-            Previsions et simulation de scenarios de tresorerie
+            Previsions et simulation de scenarios de trésorerie
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <select
+            value={selectedPlanId}
+            onChange={(e) => setSelectedPlanId(e.target.value)}
+            className="h-9 px-4 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-xs font-bold text-zinc-700 dark:text-zinc-300 focus:ring-2 focus:ring-primary/20 outline-none"
+          >
+            <option value="all">Tous les plans</option>
+            {plans.map((p) => (
+              <option key={p.id} value={p.id}>{p.label.replace(/^Plan\s*/i, '')}</option>
+            ))}
+          </select>
           <Button variant="outline" size="sm" icon="photo_camera" onClick={() => setIsSnapshotModalOpen(true)}>
             Snapshot
           </Button>
@@ -305,7 +330,7 @@ const ForecastSimulationPage: React.FC = () => {
                 <span className="text-[10px] font-black text-zinc-400 uppercase">Realiste</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="size-2.5 rounded-full bg-green-500" />
+                <div className="size-2.5 rounded-full bg-[#22a84c]" />
                 <span className="text-[10px] font-black text-zinc-400 uppercase">Optimiste</span>
               </div>
               <div className="flex items-center gap-1.5">

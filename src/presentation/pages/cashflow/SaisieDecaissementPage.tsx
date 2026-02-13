@@ -28,13 +28,13 @@ const SaisieDecaissementPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-8">
+    <div className="py-8">
       {/* Toasts */}
       {toasts.length > 0 && (
         <div className="fixed top-4 right-4 z-[100] space-y-2 max-w-sm">
           {toasts.map((t) => (
             <div key={t.id} className={`p-4 rounded-2xl shadow-xl border text-sm font-bold ${
-              t.type === 'success' ? 'bg-green-50 border-green-200 text-green-800' : 'bg-red-50 border-red-200 text-red-800'
+              t.type === 'success' ? 'bg-[#22a84c]/10 border-[#22a84c]/30 text-[#22a84c]' : 'bg-red-50 border-red-200 text-red-800'
             }`}>
               <p className="font-black text-xs uppercase tracking-wider">{t.title}</p>
               {t.message && <p className="mt-1 text-xs opacity-80">{t.message}</p>}

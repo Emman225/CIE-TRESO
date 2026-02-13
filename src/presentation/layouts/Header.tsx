@@ -8,6 +8,7 @@ const TITLE_MAP: Record<string, string> = {
   '/plan': 'Plan Consolide',
   '/imports': "Centre d'Importation",
   '/forecast': 'Simulation & Scenarios',
+  '/forecast/template-scenario': 'Template Scénario',
   '/users': 'Gestion des Utilisateurs',
   '/profiles': 'Profils & Droits',
   '/settings': 'Parametrage',
@@ -15,7 +16,7 @@ const TITLE_MAP: Record<string, string> = {
   '/saisie/decaissement': 'Nouveau Decaissement',
   '/reporting': 'Reporting',
   '/validation': 'Validation des Ecritures',
-  '/position': 'Position de Tresorerie',
+  '/position': 'Position de Trésorerie',
   '/rapprochement': 'Rapprochement Bancaire',
   '/notifications': 'Notifications',
   '/echeancier': 'Echeancier des Paiements',
@@ -141,7 +142,7 @@ const Header: React.FC = () => {
             Derniere Sync
           </span>
           <div className="flex items-center gap-1.5">
-            <div className="size-1.5 rounded-full bg-green-500 animate-pulse"></div>
+            <div className="size-1.5 rounded-full bg-[#22a84c] animate-pulse"></div>
             <span className="text-xs font-bold text-zinc-900 dark:text-white italic">
               Aujourd&apos;hui, 14:32
             </span>
@@ -185,7 +186,7 @@ const Header: React.FC = () => {
                 onClick={() => handleSaisie('/saisie/encaissement')}
                 className="w-full px-6 py-3 text-left hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors flex items-center gap-3"
               >
-                <span className="material-symbols-outlined text-green-500">add_card</span>
+                <span className="material-symbols-outlined text-[#22a84c]">add_card</span>
                 <span className="text-sm font-bold text-zinc-700 dark:text-zinc-200">
                   Encaissement
                 </span>
@@ -194,7 +195,7 @@ const Header: React.FC = () => {
                 onClick={() => handleSaisie('/saisie/decaissement')}
                 className="w-full px-6 py-3 text-left hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors flex items-center gap-3"
               >
-                <span className="material-symbols-outlined text-red-500">payments</span>
+                <span className="material-symbols-outlined text-[#e65000]">payments</span>
                 <span className="text-sm font-bold text-zinc-700 dark:text-zinc-200">
                   Decaissement
                 </span>

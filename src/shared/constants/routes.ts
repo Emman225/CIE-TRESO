@@ -24,6 +24,7 @@ export const ROUTES: Record<View, string> = {
   [View.VisImpot]: '/visualisations/impot',
   [View.VisAnnexe]: '/visualisations/annexe',
   [View.VisGaz]: '/visualisations/gaz',
+  [View.TemplateScenario]: '/forecast/template-scenario',
   [View.Users]: '/users',
   [View.Profiles]: '/profiles',
   [View.Settings]: '/settings',
@@ -69,4 +70,5 @@ export const PATH = {
   VIS_IMPOT: '/visualisations/impot',
   VIS_ANNEXE: '/visualisations/annexe',
   VIS_GAZ: '/visualisations/gaz',
+  TEMPLATE_SCENARIO: '/forecast/template-scenario',
 } as const;

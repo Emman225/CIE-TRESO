@@ -24,18 +24,21 @@ const ForgotPasswordPage: React.FC = () => {
 
   return (
     <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
-      {/* Mobile Logo - Hidden on large screens where left panel shows */}
-      <div className="flex flex-col items-center mb-10 lg:hidden">
-        <div className="bg-white size-14 rounded-2xl flex items-center justify-center p-1.5 shadow-xl shadow-primary/30 mb-4">
+      <div className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 dark:border-zinc-700/50 overflow-hidden">
+      {/* Logo & Branding - Orange Header */}
+      <div className="px-8 md:px-10 pt-8 pb-8 flex flex-col items-center" style={{ backgroundColor: '#e65000' }}>
+        <div className="bg-white size-16 rounded-2xl flex items-center justify-center p-2 shadow-xl shadow-orange-700/30 mb-4 border border-orange-300">
           <img src={logoCie} alt="CIE Logo" className="w-full h-full object-contain" />
         </div>
-        <h1 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
+        <h1 className="text-2xl font-black text-white tracking-tight">
           CIE TRESO
         </h1>
-        <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest mt-1">
-          Treasury Management
+        <p className="text-orange-100 text-xs font-bold uppercase tracking-widest mt-1">
+          Gestion de Trésorerie
         </p>
       </div>
+
+      <div className="p-8 md:p-10">
 
       {/* Icon & Header */}
       <div className="mb-8">
@@ -52,11 +55,11 @@ const ForgotPasswordPage: React.FC = () => {
 
       {/* Success message */}
       {successMessage && (
-        <div className="mb-6 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
-          <span className="material-symbols-outlined text-emerald-500 text-xl flex-shrink-0 mt-0.5">check_circle</span>
+        <div className="mb-6 p-4 bg-[#22a84c]/10 dark:bg-[#22a84c]/15 border border-[#22a84c]/30 dark:border-[#22a84c]/20 rounded-xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+          <span className="material-symbols-outlined text-[#22a84c] text-xl flex-shrink-0 mt-0.5">check_circle</span>
           <div>
-            <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">Email envoye</p>
-            <p className="text-xs text-emerald-600 dark:text-emerald-400/80 mt-0.5">{successMessage}</p>
+            <p className="text-sm font-bold text-[#22a84c] dark:text-[#2ec45a]">Email envoye</p>
+            <p className="text-xs text-[#1d8f40] dark:text-[#2ec45a]/80 mt-0.5">{successMessage}</p>
           </div>
         </div>
       )}
@@ -138,37 +141,7 @@ const ForgotPasswordPage: React.FC = () => {
         </button>
       </div>
 
-      {/* Help Text */}
-      <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl">
-        <div className="flex items-start gap-3">
-          <span className="material-symbols-outlined text-blue-500 text-xl flex-shrink-0 mt-0.5">info</span>
-          <div>
-            <p className="text-sm font-bold text-blue-700 dark:text-blue-400">Besoin d'aide ?</p>
-            <p className="text-xs text-blue-600 dark:text-blue-400/80 mt-1 leading-relaxed">
-              Si vous n'avez pas recu l'email apres quelques minutes, verifiez votre dossier spam ou contactez le support informatique.
-            </p>
-          </div>
-        </div>
       </div>
-
-      {/* Footer Links */}
-      <div className="mt-10 pt-8 border-t border-zinc-200 dark:border-zinc-800">
-        <div className="flex items-center justify-center gap-6 text-xs">
-          <button className="text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 font-medium transition-colors">
-            Confidentialite
-          </button>
-          <span className="text-zinc-300 dark:text-zinc-700">•</span>
-          <button className="text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 font-medium transition-colors">
-            Conditions
-          </button>
-          <span className="text-zinc-300 dark:text-zinc-700">•</span>
-          <button className="text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 font-medium transition-colors">
-            Aide
-          </button>
-        </div>
-        <p className="text-center text-[11px] text-zinc-400 mt-4">
-          Direction des Systemes d'Information - CIE
-        </p>
       </div>
     </div>
   );

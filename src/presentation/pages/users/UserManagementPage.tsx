@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import * as XLSX from 'xlsx';
 import { DataTable } from '@/presentation/components/ui/DataTable';
 import { Badge } from '@/presentation/components/ui/Badge';
 import { Button } from '@/presentation/components/ui/Button';
@@ -185,6 +186,25 @@ const UserManagementPage: React.FC = () => {
     setConfirmDeleteUser(null);
   };
 
+  // Export
+  const handleExport = () => {
+    const rows = filteredUsers.map((u) => ({
+      Nom: u.name || `${u.prenom} ${u.nom}`,
+      Email: u.email,
+      Telephone: u.phone || '-',
+      Role: u.role,
+      Profil: getProfileName(u.profileId),
+      Statut: u.status,
+      'Derniere Connexion': u.lastLogin || 'Jamais',
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Utilisateurs');
+    XLSX.writeFile(wb, 'Utilisateurs_Export.xlsx');
+    addToast('Export reussi - Liste des utilisateurs telechargee', 'success');
+  };
+
   // Table columns
   const columns = [
     {
@@ -206,7 +226,7 @@ const UserManagementPage: React.FC = () => {
             )}
             <div
               className={`absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-white dark:border-zinc-900 ${
-                user.status === 'Active' ? 'bg-green-500' : 'bg-zinc-300'
+                user.status === 'Active' ? 'bg-[#22a84c]' : 'bg-zinc-300'
               }`}
             />
           </div>
@@ -278,7 +298,7 @@ const UserManagementPage: React.FC = () => {
             className={`p-2 rounded-lg transition-all ${
               user.status === 'Active'
                 ? 'text-zinc-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20'
-                : 'text-zinc-400 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20'
+                : 'text-zinc-400 hover:text-[#22a84c] hover:bg-[#22a84c]/5 dark:hover:bg-[#22a84c]/15'
             }`}
             title={user.status === 'Active' ? 'Desactiver' : 'Activer'}
           >
@@ -317,9 +337,14 @@ const UserManagementPage: React.FC = () => {
             {users.length} utilisateur{users.length > 1 ? 's' : ''} enregistre{users.length > 1 ? 's' : ''}
           </p>
         </div>
-        <Button variant="primary" size="md" icon="person_add" onClick={openCreateModal}>
-          NOUVEL UTILISATEUR
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button variant="outline" size="sm" icon="download" onClick={handleExport}>
+            Exporter
+          </Button>
+          <Button variant="primary" size="md" icon="person_add" onClick={openCreateModal}>
+            NOUVEL UTILISATEUR
+          </Button>
+        </div>
       </div>
 
       {/* Filters Bar */}

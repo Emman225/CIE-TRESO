@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import * as XLSX from 'xlsx';
 import { Button } from '@/presentation/components/ui/Button';
 import { Badge } from '@/presentation/components/ui/Badge';
 import { Modal } from '@/presentation/components/ui/Modal';
@@ -10,7 +11,7 @@ import type { ResourceType, ActionType } from '@/shared/types/roles';
 
 const ALL_RESOURCES: { key: ResourceType; label: string; icon: string }[] = [
   { key: 'dashboard', label: 'Tableau de bord', icon: 'dashboard' },
-  { key: 'plan', label: 'Plan Tresorerie', icon: 'account_balance' },
+  { key: 'plan', label: 'Plan Trésorerie', icon: 'account_balance' },
   { key: 'saisie', label: 'Saisie', icon: 'edit_note' },
   { key: 'imports', label: 'Imports', icon: 'upload_file' },
   { key: 'forecast', label: 'Previsions', icon: 'query_stats' },
@@ -149,6 +150,23 @@ const ProfileManagementPage: React.FC = () => {
     return profile.permissions.reduce((acc, p) => acc + p.actions.length, 0);
   };
 
+  // Export
+  const handleExport = () => {
+    const rows = profiles.map((p) => ({
+      Nom: p.name,
+      Description: p.description,
+      'Nombre de droits': countPermissions(p),
+      'Par defaut': p.isDefault ? 'Oui' : 'Non',
+      'Date creation': p.createdAt ? new Date(p.createdAt).toLocaleDateString('fr-FR') : '-',
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Profils');
+    XLSX.writeFile(wb, 'Profils_Droits_Export.xlsx');
+    addToast('Export reussi - Liste des profils telechargee', 'success');
+  };
+
   // Create / Edit profile
   const openCreateModal = () => {
     setEditMode('create');
@@ -227,9 +245,14 @@ const ProfileManagementPage: React.FC = () => {
             Gestion des profils et permissions d'acces
           </p>
         </div>
-        <Button variant="primary" size="md" icon="add_circle" onClick={openCreateModal}>
-          NOUVEAU PROFIL
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button variant="outline" size="sm" icon="download" onClick={handleExport}>
+            Exporter
+          </Button>
+          <Button variant="primary" size="md" icon="add_circle" onClick={openCreateModal}>
+            NOUVEAU PROFIL
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -412,7 +435,7 @@ const ProfileManagementPage: React.FC = () => {
                                 size-8 rounded-lg border-2 flex items-center justify-center transition-all
                                 ${
                                   allGranted
-                                    ? 'bg-green-500 border-green-500 text-white shadow-md shadow-green-500/20'
+                                    ? 'bg-[#22a84c] border-[#22a84c] text-white shadow-md shadow-[#22a84c]/20'
                                     : someGranted
                                     ? 'bg-amber-100 border-amber-400 text-amber-600 dark:bg-amber-900/30 dark:border-amber-600'
                                     : 'border-zinc-200 dark:border-zinc-700 text-transparent hover:border-primary/40'

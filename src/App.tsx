@@ -18,6 +18,7 @@ import UserManagementPage from '@/presentation/pages/users/UserManagementPage';
 import ProfileManagementPage from '@/presentation/pages/users/ProfileManagementPage';
 import SettingsPage from '@/presentation/pages/settings/SettingsPage';
 import ForecastSimulationPage from '@/presentation/pages/forecast/ForecastSimulationPage';
+import TemplateScenarioPage from '@/presentation/pages/forecast/TemplateScenarioPage';
 import ReportingPage from '@/presentation/pages/reporting/ReportingPage';
 import ValidationPage from '@/presentation/pages/validation/ValidationPage';
 import PositionTresoreriePage from '@/presentation/pages/tresorerie/PositionTresoreriePage';
@@ -115,6 +116,11 @@ const App: React.FC = () => {
                 <Route path={PATH.IMPORTS} element={
                   <RoleGuard resource="imports" fallback={<AccessDeniedPage />}>
                     <ImportCenterPage />
+                  </RoleGuard>
+                } />
+                <Route path={PATH.TEMPLATE_SCENARIO} element={
+                  <RoleGuard resource="forecast" fallback={<AccessDeniedPage />}>
+                    <TemplateScenarioPage />
                   </RoleGuard>
                 } />
                 <Route path={PATH.FORECAST} element={

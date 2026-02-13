@@ -1,6 +1,6 @@
 export const APP_CONFIG = {
   appName: 'CIE TRESO',
-  appFullName: 'CIE - Gestion de Tresorerie',
+  appFullName: 'CIE - Gestion de Trésorerie',
   companyName: 'Compagnie Ivoirienne d\'Electricite',
   companyAbbreviation: 'CIE',
   currency: 'FCFA',

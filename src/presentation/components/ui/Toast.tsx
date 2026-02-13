@@ -14,9 +14,9 @@ const typeConfig: Record<
   success: {
     icon: 'check_circle',
     bg: 'bg-white dark:bg-zinc-900',
-    border: 'border-green-200 dark:border-green-800',
-    text: 'text-green-700 dark:text-green-400',
-    iconColor: 'text-green-500',
+    border: 'border-[#22a84c]/30 dark:border-[#22a84c]/20',
+    text: 'text-[#22a84c] dark:text-[#2ec45a]',
+    iconColor: 'text-[#22a84c]',
   },
   error: {
     icon: 'error',
@@ -28,9 +28,9 @@ const typeConfig: Record<
   warning: {
     icon: 'warning',
     bg: 'bg-white dark:bg-zinc-900',
-    border: 'border-orange-200 dark:border-orange-800',
-    text: 'text-orange-700 dark:text-orange-400',
-    iconColor: 'text-orange-500',
+    border: 'border-[#e65000]/30 dark:border-[#e65000]/20',
+    text: 'text-[#e65000] dark:text-[#ff8c4a]',
+    iconColor: 'text-[#e65000]',
   },
   info: {
     icon: 'info',

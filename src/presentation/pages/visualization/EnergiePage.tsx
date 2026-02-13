@@ -5,7 +5,7 @@ const EnergiePage: React.FC = () => (
   <VisualizationTemplate
     domain="Energie"
     title="Energie"
-    description="Flux de tresorerie lies a la production et distribution d'energie electrique"
+    description="Flux de trésorerie lies a la production et distribution d'energie electrique"
     icon="bolt"
     accentColor="#e65000"
   />

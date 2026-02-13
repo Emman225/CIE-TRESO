@@ -1,8 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar, Cell } from 'recharts';
 import { Badge } from '@/presentation/components/ui/Badge';
 import { Button } from '@/presentation/components/ui/Button';
 import { useToast } from '@/presentation/hooks/useToast';
+import { configRepository } from '@/infrastructure/di/container';
+import type { PlanEntity } from '@/domain/entities/PlanTresorerie';
 
 // ============ Types ============
 interface BankAccount {
@@ -151,6 +153,12 @@ const formatFullCFA = (amount: number): string => {
 const PositionTresoreriePage: React.FC = () => {
   const { addToast } = useToast();
   const [selectedBank, setSelectedBank] = useState<string>('all');
+  const [plans, setPlans] = useState<PlanEntity[]>([]);
+  const [selectedPlanId, setSelectedPlanId] = useState<string>('all');
+
+  useEffect(() => {
+    configRepository.getPlans().then(setPlans);
+  }, []);
 
   // Totals
   const totals = useMemo(() => {
@@ -181,17 +189,27 @@ const PositionTresoreriePage: React.FC = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
-            Position de Tresorerie
+            Position de Trésorerie
           </h1>
           <p className="text-sm text-zinc-500 font-semibold mt-1">
             Soldes bancaires et mouvements en temps reel
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-4 py-2 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800/30">
-            <div className="size-2 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-xs font-black text-green-700 dark:text-green-400">Temps reel</span>
+          <div className="flex items-center gap-2 px-4 py-2 bg-[#22a84c]/10 dark:bg-[#22a84c]/15 rounded-xl border border-[#22a84c]/30 dark:border-[#22a84c]/20">
+            <div className="size-2 rounded-full bg-[#22a84c] animate-pulse" />
+            <span className="text-xs font-black text-[#22a84c] dark:text-[#2ec45a]">Temps reel</span>
           </div>
+          <select
+            value={selectedPlanId}
+            onChange={(e) => setSelectedPlanId(e.target.value)}
+            className="py-2.5 px-4 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-xs font-bold text-zinc-700 dark:text-zinc-300 focus:ring-2 focus:ring-primary/20 outline-none"
+          >
+            <option value="all">Tous les plans</option>
+            {plans.map((p) => (
+              <option key={p.id} value={p.id}>{p.label.replace(/^Plan\s*/i, '')}</option>
+            ))}
+          </select>
           <Button
             variant="outline"
             size="sm"
@@ -207,7 +225,7 @@ const PositionTresoreriePage: React.FC = () => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { label: 'Solde Total', value: formatCFA(totals.totalBalance) + ' FCFA', icon: 'account_balance', color: '#e65000' },
-          { label: 'Disponible', value: formatCFA(totals.totalAvailable) + ' FCFA', icon: 'payments', color: '#22c55e' },
+          { label: 'Disponible', value: formatCFA(totals.totalAvailable) + ' FCFA', icon: 'payments', color: '#22a84c' },
           { label: 'Bloque / Engage', value: formatCFA(totals.blocked) + ' FCFA', icon: 'lock', color: '#f59e0b' },
           { label: 'Comptes Actifs', value: String(totals.activeCount), icon: 'account_balance_wallet', color: '#137fec' },
         ].map((kpi) => (
@@ -237,7 +255,7 @@ const PositionTresoreriePage: React.FC = () => {
             </h3>
             <div className="flex gap-4 text-[10px] font-black uppercase tracking-widest bg-zinc-50 dark:bg-zinc-800 p-2 rounded-lg">
               <div className="flex items-center gap-2"><span className="size-2.5 rounded-full bg-[#e65000]" /> Solde</div>
-              <div className="flex items-center gap-2"><span className="size-2.5 rounded-full bg-green-500" /> Entrees</div>
+              <div className="flex items-center gap-2"><span className="size-2.5 rounded-full bg-[#22a84c]" /> Entrees</div>
               <div className="flex items-center gap-2"><span className="size-2.5 rounded-full bg-red-400" /> Sorties</div>
             </div>
           </div>
@@ -258,7 +276,7 @@ const PositionTresoreriePage: React.FC = () => {
                   itemStyle={{ fontSize: '12px', fontWeight: '900' }}
                 />
                 <Area type="monotone" dataKey="total" stroke="#e65000" strokeWidth={3} fillOpacity={1} fill="url(#gradTotal)" name="Solde" />
-                <Area type="monotone" dataKey="encaissements" stroke="#22c55e" strokeWidth={2} fillOpacity={0} strokeDasharray="4 2" name="Entrees" />
+                <Area type="monotone" dataKey="encaissements" stroke="#22a84c" strokeWidth={2} fillOpacity={0} strokeDasharray="4 2" name="Entrees" />
                 <Area type="monotone" dataKey="decaissements" stroke="#ef4444" strokeWidth={2} fillOpacity={0} strokeDasharray="4 2" name="Sorties" />
               </AreaChart>
             </ResponsiveContainer>
@@ -335,7 +353,7 @@ const PositionTresoreriePage: React.FC = () => {
                 </div>
                 <div className="flex justify-between items-end">
                   <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Disponible</span>
-                  <span className="text-sm font-bold text-green-600 dark:text-green-400">
+                  <span className="text-sm font-bold text-[#22a84c] dark:text-[#2ec45a]">
                     {formatCFA(account.availableBalance)} {account.currency}
                   </span>
                 </div>
@@ -387,7 +405,7 @@ const PositionTresoreriePage: React.FC = () => {
         <div className="bg-white dark:bg-zinc-900 rounded-[24px] border border-zinc-200 dark:border-zinc-800 overflow-hidden">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-zinc-50 dark:bg-zinc-800/50 text-zinc-400 text-[10px] font-black uppercase tracking-widest">
+              <tr className="bg-zinc-950 text-white text-[10px] font-black uppercase tracking-widest">
                 <th className="px-6 py-4">Date</th>
                 <th className="px-6 py-4">Description</th>
                 <th className="px-6 py-4">Banque</th>
@@ -404,7 +422,7 @@ const PositionTresoreriePage: React.FC = () => {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className={`size-8 rounded-lg flex items-center justify-center ${
-                        mov.direction === 'in' ? 'bg-green-100 text-green-600 dark:bg-green-900/30' : 'bg-red-100 text-red-600 dark:bg-red-900/30'
+                        mov.direction === 'in' ? 'bg-[#22a84c]/10 text-[#22a84c] dark:bg-[#22a84c]/20' : 'bg-red-100 text-red-600 dark:bg-red-900/30'
                       }`}>
                         <span className="material-symbols-outlined text-base">
                           {mov.direction === 'in' ? 'south_west' : 'north_east'}
@@ -418,7 +436,7 @@ const PositionTresoreriePage: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <span className={`text-sm font-black ${
-                      mov.direction === 'in' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                      mov.direction === 'in' ? 'text-[#22a84c] dark:text-[#2ec45a]' : 'text-red-600 dark:text-red-400'
                     }`}>
                       {mov.direction === 'in' ? '+' : '-'}{formatFullCFA(mov.amount)}
                     </span>

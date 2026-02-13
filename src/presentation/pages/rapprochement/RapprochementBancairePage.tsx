@@ -1,7 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Badge } from '@/presentation/components/ui/Badge';
 import { Button } from '@/presentation/components/ui/Button';
 import { useToast } from '@/presentation/hooks/useToast';
+import { configRepository } from '@/infrastructure/di/container';
+import type { PlanEntity } from '@/domain/entities/PlanTresorerie';
 
 // ============ Types ============
 type ReconciliationStatus = 'matched' | 'unmatched_bank' | 'unmatched_internal' | 'discrepancy';
@@ -197,6 +199,12 @@ const RapprochementBancairePage: React.FC = () => {
   const [filterBank, setFilterBank] = useState<string>('all');
   const [selectedPeriod, setSelectedPeriod] = useState('2026-01');
   const [isReconciling, setIsReconciling] = useState(false);
+  const [plans, setPlans] = useState<PlanEntity[]>([]);
+  const [selectedPlanId, setSelectedPlanId] = useState<string>('all');
+
+  useEffect(() => {
+    configRepository.getPlans().then(setPlans);
+  }, []);
 
   // Summary
   const summary: ReconciliationSummary = useMemo(() => {
@@ -310,15 +318,15 @@ const RapprochementBancairePage: React.FC = () => {
 
         <div className={`rounded-[24px] border p-6 ${
           summary.bankBalance === summary.internalBalance
-            ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800/30'
+            ? 'bg-[#22a84c]/5 dark:bg-[#22a84c]/10 border-[#22a84c]/30 dark:border-[#22a84c]/20'
             : 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800/30'
         }`}>
           <div className="flex items-center gap-3 mb-4">
             <div className={`size-10 rounded-xl flex items-center justify-center ${
-              summary.bankBalance === summary.internalBalance ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30'
+              summary.bankBalance === summary.internalBalance ? 'bg-[#22a84c]/10 dark:bg-[#22a84c]/20' : 'bg-red-100 dark:bg-red-900/30'
             }`}>
               <span className={`material-symbols-outlined text-xl ${
-                summary.bankBalance === summary.internalBalance ? 'text-green-600' : 'text-red-600'
+                summary.bankBalance === summary.internalBalance ? 'text-[#22a84c]' : 'text-red-600'
               }`}>
                 {summary.bankBalance === summary.internalBalance ? 'check_circle' : 'warning'}
               </span>
@@ -326,7 +334,7 @@ const RapprochementBancairePage: React.FC = () => {
             <div>
               <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Ecart Global</p>
               <p className={`text-xl font-black ${
-                summary.bankBalance === summary.internalBalance ? 'text-green-600' : 'text-red-600'
+                summary.bankBalance === summary.internalBalance ? 'text-[#22a84c]' : 'text-red-600'
               }`}>
                 {formatCFA(Math.abs(summary.bankBalance - summary.internalBalance))}
               </p>
@@ -338,8 +346,8 @@ const RapprochementBancairePage: React.FC = () => {
       {/* Stats Row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: 'Taux rapprochement', value: `${reconciliationRate}%`, icon: 'percent', color: '#22c55e' },
-          { label: 'Rapproches', value: String(summary.matchedCount), icon: 'check_circle', color: '#22c55e' },
+          { label: 'Taux rapprochement', value: `${reconciliationRate}%`, icon: 'percent', color: '#22a84c' },
+          { label: 'Rapproches', value: String(summary.matchedCount), icon: 'check_circle', color: '#22a84c' },
           { label: 'Non rapproches', value: String(summary.unmatchedBankCount + summary.unmatchedInternalCount), icon: 'help', color: '#f59e0b' },
           { label: 'Ecarts', value: String(summary.discrepancyCount), icon: 'error', color: '#ef4444' },
         ].map((stat) => (
@@ -383,6 +391,17 @@ const RapprochementBancairePage: React.FC = () => {
             ))}
           </select>
 
+          <select
+            value={selectedPlanId}
+            onChange={(e) => setSelectedPlanId(e.target.value)}
+            className="py-2.5 px-4 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-bold text-zinc-700 dark:text-zinc-300 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+          >
+            <option value="all">Tous les plans</option>
+            {plans.map((p) => (
+              <option key={p.id} value={p.id}>{p.label.replace(/^Plan\s*/i, '')}</option>
+            ))}
+          </select>
+
           <Button
             variant="outline"
             size="md"
@@ -398,7 +417,7 @@ const RapprochementBancairePage: React.FC = () => {
       <div className="bg-white dark:bg-zinc-900 rounded-[24px] border border-zinc-200 dark:border-zinc-800 overflow-hidden">
         <table className="w-full text-left">
           <thead>
-            <tr className="bg-zinc-50 dark:bg-zinc-800/50 text-zinc-400 text-[10px] font-black uppercase tracking-widest">
+            <tr className="bg-zinc-950 text-white text-[10px] font-black uppercase tracking-widest">
               <th className="px-5 py-4">Date</th>
               <th className="px-5 py-4">Description</th>
               <th className="px-5 py-4">Ref. Banque</th>
@@ -422,7 +441,7 @@ const RapprochementBancairePage: React.FC = () => {
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-2">
                       <div className={`size-7 rounded-lg flex items-center justify-center ${
-                        line.direction === 'credit' ? 'bg-green-100 text-green-600 dark:bg-green-900/30' : 'bg-red-100 text-red-600 dark:bg-red-900/30'
+                        line.direction === 'credit' ? 'bg-[#22a84c]/10 text-[#22a84c] dark:bg-[#22a84c]/20' : 'bg-red-100 text-red-600 dark:bg-red-900/30'
                       }`}>
                         <span className="material-symbols-outlined text-sm">
                           {line.direction === 'credit' ? 'south_west' : 'north_east'}
@@ -457,7 +476,7 @@ const RapprochementBancairePage: React.FC = () => {
                         {ecart > 0 ? '+' : ''}{formatCFA(ecart)}
                       </span>
                     ) : line.status === 'matched' ? (
-                      <span className="text-xs font-bold text-green-600 dark:text-green-400">0</span>
+                      <span className="text-xs font-bold text-[#22a84c] dark:text-[#2ec45a]">0</span>
                     ) : (
                       <span className="text-xs text-zinc-300 dark:text-zinc-600">—</span>
                     )}
@@ -465,7 +484,7 @@ const RapprochementBancairePage: React.FC = () => {
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-1.5">
                       <span className={`material-symbols-outlined text-sm ${
-                        config.variant === 'success' ? 'text-green-500' :
+                        config.variant === 'success' ? 'text-[#22a84c]' :
                         config.variant === 'error' ? 'text-red-500' :
                         config.variant === 'warning' ? 'text-orange-500' :
                         'text-blue-500'

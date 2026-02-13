@@ -61,7 +61,7 @@ const DashboardPage: React.FC = () => {
             <div
               key={t.id}
               className={`p-4 rounded-2xl shadow-xl border text-sm font-bold animate-[slideUp_300ms_ease-out] ${
-                t.type === 'success' ? 'bg-green-50 border-green-200 text-green-800' :
+                t.type === 'success' ? 'bg-[#22a84c]/10 border-[#22a84c]/30 text-[#22a84c]' :
                 t.type === 'error' ? 'bg-red-50 border-red-200 text-red-800' :
                 t.type === 'warning' ? 'bg-amber-50 border-amber-200 text-amber-800' :
                 'bg-blue-50 border-blue-200 text-blue-800'
@@ -88,9 +88,9 @@ const DashboardPage: React.FC = () => {
             <div
               key={alert.id}
               className={`p-4 rounded-2xl border cursor-pointer transition-all hover:shadow-md ${
-                alert.severity === 'critical' ? 'border-red-200 bg-red-50/50 dark:bg-red-900/10 dark:border-red-800/30' :
-                alert.severity === 'warning' ? 'border-amber-200 bg-amber-50/50 dark:bg-amber-900/10 dark:border-amber-800/30' :
-                'border-blue-200 bg-blue-50/50 dark:bg-blue-900/10 dark:border-blue-800/30'
+                alert.severity === 'critical' ? 'border-red-300 bg-red-100 dark:bg-red-900/30 dark:border-red-700/50' :
+                alert.severity === 'warning' ? 'border-amber-300 bg-amber-100 dark:bg-amber-900/30 dark:border-amber-700/50' :
+                'border-blue-300 bg-blue-100 dark:bg-blue-900/30 dark:border-blue-700/50'
               }`}
             >
               <div className="flex items-start justify-between gap-2 mb-2">
@@ -109,8 +109,8 @@ const DashboardPage: React.FC = () => {
       {/* Quick Action Buttons */}
       <div className="flex flex-wrap gap-3">
         {[
-          { label: 'Plan de Tresorerie', icon: 'table_chart', path: PATH.PLAN, color: 'bg-[#e65000]' },
-          { label: 'Centre d\'Import', icon: 'cloud_upload', path: PATH.IMPORTS, color: 'bg-[#137fec]' },
+          { label: 'Plan de Trésorerie', icon: 'table_chart', path: PATH.PLAN, color: 'bg-[#e65000] shadow-[#e65000]/30' },
+          { label: 'Centre d\'Import', icon: 'cloud_upload', path: PATH.IMPORTS, color: 'bg-[#22a84c] shadow-[#22a84c]/30' },
           { label: 'Simulation', icon: 'query_stats', path: PATH.FORECAST, color: 'bg-zinc-900 dark:bg-white dark:text-zinc-900' },
         ].map((action) => (
           <button
@@ -126,29 +126,33 @@ const DashboardPage: React.FC = () => {
 
       {/* Metrics Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {metrics.map((m, idx) => (
-          <MetricCard
-            key={idx}
-            label={m.label}
-            value={m.value}
-            change={m.change}
-            trend={m.trend}
-            info={m.info}
-            icon={m.icon}
-            onClick={() => handleMetricClick(m)}
-          />
-        ))}
+        {metrics.map((m, idx) => {
+          const colors = ['#e65000', '#22a84c', '#cc4700', '#1d8f40'];
+          return (
+            <MetricCard
+              key={idx}
+              label={m.label}
+              value={m.value}
+              change={m.change}
+              trend={m.trend}
+              info={m.info}
+              icon={m.icon}
+              accentColor={colors[idx % colors.length]}
+              onClick={() => handleMetricClick(m)}
+            />
+          );
+        })}
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div>
         <div className="bg-white dark:bg-zinc-900 p-6 rounded-[24px] border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col">
           <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-6">Repartition par Flux</h3>
           <BarChartWidget
             items={[
-              { label: 'Recettes Directes', value: 65, color: '#e65000' },
-              { label: 'Paiements Fournisseurs', value: 42, color: '#137fec' },
-              { label: 'Frais Generaux', value: 28, color: '#a1a1aa' },
+              { label: 'Recettes Directes', value: 65, color: '#22a84c' },
+              { label: 'Paiements Fournisseurs', value: 42, color: '#e65000' },
+              { label: 'Frais Generaux', value: 28, color: '#cc4700' },
             ]}
           />
           <div className="mt-8 p-5 bg-[#e65000]/5 rounded-2xl border border-[#e65000]/10 flex items-start gap-3 transform hover:scale-[1.02] transition-transform cursor-pointer">
@@ -179,7 +183,7 @@ const DashboardPage: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-zinc-50 dark:bg-zinc-800/50 text-zinc-400 text-[10px] font-black uppercase tracking-widest">
+              <tr className="bg-[#e65000] text-white text-[10px] font-black uppercase tracking-widest">
                 <th className="px-8 py-5">Entite / Projet</th>
                 <th className="px-8 py-5">Categorie</th>
                 <th className="px-8 py-5">Date d'Execution</th>
@@ -197,7 +201,7 @@ const DashboardPage: React.FC = () => {
                   <td className="px-8 py-6">
                     <div className="flex items-center gap-4">
                       <div className={`size-10 rounded-xl flex items-center justify-center transition-transform group-hover:rotate-6 ${
-                        t.type === 'Receipt' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+                        t.type === 'Receipt' ? 'bg-[#22a84c]/10 text-[#22a84c]' : 'bg-[#e65000]/10 text-[#e65000]'
                       }`}>
                         <span className="material-symbols-outlined text-xl">
                           {t.type === 'Receipt' ? 'download_for_offline' : 'upload_file'}

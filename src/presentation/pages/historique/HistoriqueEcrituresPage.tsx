@@ -1,7 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/presentation/components/ui/Button';
 import { DateRangePicker } from '@/presentation/components/ui/DateRangePicker';
 import { Pagination } from '@/presentation/components/ui/Pagination';
+import { configRepository } from '@/infrastructure/di/container';
+import { MONTHS_FR } from '@/shared/constants/appConfig';
+import type { PlanEntity } from '@/domain/entities/PlanTresorerie';
 
 // Types
 type TransactionType = 'encaissement' | 'decaissement';
@@ -112,7 +115,7 @@ const formatDateTime = (date: Date): string => {
 
 const getStatusConfig = (status: TransactionStatus) => {
   const configs = {
-    validated: { label: 'Validée', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400', icon: 'check_circle' },
+    validated: { label: 'Validée', color: 'bg-[#22a84c]/10 text-[#22a84c] dark:bg-[#22a84c]/20 dark:text-[#2ec45a]', icon: 'check_circle' },
     pending: { label: 'En attente', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400', icon: 'schedule' },
     rejected: { label: 'Rejetée', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400', icon: 'cancel' },
     cancelled: { label: 'Annulée', color: 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400', icon: 'block' },
@@ -142,12 +145,23 @@ const HistoriqueEcrituresPage: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState<'all' | TransactionStatus>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedBank, setSelectedBank] = useState<string>('all');
+  const [selectedMonth, setSelectedMonth] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [showFilters, setShowFilters] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [sortField, setSortField] = useState<'date' | 'amount' | 'reference'>('date');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [plans, setPlans] = useState<PlanEntity[]>([]);
+  const [selectedPlanId, setSelectedPlanId] = useState<string>('all');
+
+  useEffect(() => {
+    const loadPlans = async () => {
+      const pls = await configRepository.getPlans();
+      setPlans(pls);
+    };
+    loadPlans();
+  }, []);
 
   // Get unique values for filters
   const categories = useMemo(() => {
@@ -175,6 +189,8 @@ const HistoriqueEcrituresPage: React.FC = () => {
       if (selectedCategory !== 'all' && t.category !== selectedCategory) return false;
       // Bank
       if (selectedBank !== 'all' && t.bankAccount !== selectedBank) return false;
+      // Month
+      if (selectedMonth !== 'all' && t.date.getMonth() !== Number(selectedMonth)) return false;
       // Search
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
@@ -202,7 +218,7 @@ const HistoriqueEcrituresPage: React.FC = () => {
     });
 
     return result;
-  }, [dateRange, selectedType, selectedStatus, selectedCategory, selectedBank, searchQuery, sortField, sortDirection]);
+  }, [dateRange, selectedType, selectedStatus, selectedCategory, selectedBank, selectedMonth, searchQuery, sortField, sortDirection]);
 
   // Pagination
   const totalPages = Math.ceil(filteredTransactions.length / pageSize);
@@ -243,6 +259,8 @@ const HistoriqueEcrituresPage: React.FC = () => {
     setSelectedStatus('all');
     setSelectedCategory('all');
     setSelectedBank('all');
+    setSelectedMonth('all');
+    setSelectedPlanId('all');
     setCurrentPage(1);
   };
 
@@ -277,12 +295,12 @@ const HistoriqueEcrituresPage: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="bg-white dark:bg-zinc-900 rounded-[20px] border border-zinc-200 dark:border-zinc-800 p-4">
           <div className="flex items-center gap-3">
-            <div className="size-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-              <span className="material-symbols-outlined text-emerald-600">trending_up</span>
+            <div className="size-10 rounded-xl bg-[#22a84c]/10 dark:bg-[#22a84c]/20 flex items-center justify-center">
+              <span className="material-symbols-outlined text-[#22a84c]">trending_up</span>
             </div>
             <div>
               <p className="text-xs font-bold text-zinc-500 uppercase">Encaissements ({stats.countEncaissements})</p>
-              <p className="text-lg font-black text-emerald-600">{(stats.totalEncaissements / 1000000000).toFixed(2)} Mds</p>
+              <p className="text-lg font-black text-[#22a84c]">{(stats.totalEncaissements / 1000000000).toFixed(2)} Mds</p>
             </div>
           </div>
         </div>
@@ -352,6 +370,34 @@ const HistoriqueEcrituresPage: React.FC = () => {
               <option value="cancelled">Annulées</option>
             </select>
 
+            <select
+              value={selectedMonth}
+              onChange={(e) => {
+                setSelectedMonth(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="px-3 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20"
+            >
+              <option value="all">Tous les mois</option>
+              {MONTHS_FR.map((m, i) => (
+                <option key={i} value={String(i)}>{m}</option>
+              ))}
+            </select>
+
+            <select
+              value={selectedPlanId}
+              onChange={(e) => {
+                setSelectedPlanId(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="px-3 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20"
+            >
+              <option value="all">Tous les plans</option>
+              {plans.map((p) => (
+                <option key={p.id} value={p.id}>{p.label.replace(/^Plan\s*/i, '')}</option>
+              ))}
+            </select>
+
             <Button
               variant="outline"
               size="sm"
@@ -361,7 +407,7 @@ const HistoriqueEcrituresPage: React.FC = () => {
               Filtres
             </Button>
 
-            {(searchQuery || selectedType !== 'all' || selectedStatus !== 'all' || selectedCategory !== 'all' || selectedBank !== 'all') && (
+            {(searchQuery || selectedType !== 'all' || selectedStatus !== 'all' || selectedCategory !== 'all' || selectedBank !== 'all' || selectedMonth !== 'all' || selectedPlanId !== 'all') && (
               <Button variant="ghost" size="sm" icon="clear" onClick={resetFilters}>
                 Réinitialiser
               </Button>
@@ -412,7 +458,7 @@ const HistoriqueEcrituresPage: React.FC = () => {
       {/* Results Table */}
       <div className="bg-white dark:bg-zinc-900 rounded-[24px] border border-zinc-200 dark:border-zinc-800 overflow-hidden">
         {/* Table Header */}
-        <div className="grid grid-cols-12 gap-2 px-6 py-4 bg-zinc-50 dark:bg-zinc-800/50 text-xs font-bold text-zinc-500 uppercase tracking-wider">
+        <div className="grid grid-cols-12 gap-2 px-6 py-4 bg-zinc-950 text-xs font-bold text-white uppercase tracking-wider">
           <div
             className="col-span-2 flex items-center gap-1 cursor-pointer hover:text-zinc-700 dark:hover:text-zinc-300"
             onClick={() => handleSort('reference')}
@@ -477,7 +523,7 @@ const HistoriqueEcrituresPage: React.FC = () => {
                   </div>
                   <div className="col-span-2">
                     <div className="flex items-center gap-2">
-                      <div className={`size-2 rounded-full ${transaction.type === 'encaissement' ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                      <div className={`size-2 rounded-full ${transaction.type === 'encaissement' ? 'bg-[#22a84c]' : 'bg-red-500'}`} />
                       <div>
                         <p className="text-sm font-medium text-zinc-900 dark:text-white">{transaction.category}</p>
                         <p className="text-xs text-zinc-500">{transaction.subCategory}</p>
@@ -489,7 +535,7 @@ const HistoriqueEcrituresPage: React.FC = () => {
                     <p className="text-xs text-zinc-500">{getPaymentMethodLabel(transaction.paymentMethod)}</p>
                   </div>
                   <div className="col-span-2 text-right">
-                    <p className={`text-sm font-black ${transaction.type === 'encaissement' ? 'text-emerald-600' : 'text-red-600'}`}>
+                    <p className={`text-sm font-black ${transaction.type === 'encaissement' ? 'text-[#22a84c]' : 'text-red-600'}`}>
                       {transaction.type === 'encaissement' ? '+' : '-'}{formatAmount(transaction.amount)}
                     </p>
                     <p className="text-xs text-zinc-500">{transaction.bankAccount}</p>
@@ -565,7 +611,7 @@ const HistoriqueEcrituresPage: React.FC = () => {
               <div className="flex items-center gap-4">
                 <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold ${
                   selectedTransaction.type === 'encaissement'
-                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                    ? 'bg-[#22a84c]/10 text-[#22a84c] dark:bg-[#22a84c]/20 dark:text-[#2ec45a]'
                     : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                 }`}>
                   <span className="material-symbols-outlined text-lg">
@@ -583,7 +629,7 @@ const HistoriqueEcrituresPage: React.FC = () => {
               <div className="bg-zinc-50 dark:bg-zinc-800 rounded-xl p-4 text-center">
                 <p className="text-xs font-bold text-zinc-500 uppercase mb-1">Montant</p>
                 <p className={`text-3xl font-black ${
-                  selectedTransaction.type === 'encaissement' ? 'text-emerald-600' : 'text-red-600'
+                  selectedTransaction.type === 'encaissement' ? 'text-[#22a84c]' : 'text-red-600'
                 }`}>
                   {selectedTransaction.type === 'encaissement' ? '+' : '-'}{formatAmount(selectedTransaction.amount)}
                 </p>

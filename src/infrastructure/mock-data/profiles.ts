@@ -31,8 +31,8 @@ export const mockProfiles: ProfileEntity[] = [
   },
   {
     id: '2',
-    nom: 'Analyste Tresorerie',
-    description: 'Gestion du plan de tresorerie, previsions et imports de donnees',
+    nom: 'Analyste Trésorerie',
+    description: 'Gestion du plan de trésorerie, previsions et imports de donnees',
     role: 'Analyst',
     permissions: [
       { resource: 'dashboard', actions: ['view'] },
@@ -78,7 +78,7 @@ export const mockProfiles: ProfileEntity[] = [
   {
     id: '4',
     nom: 'Controleur',
-    description: 'Validation et controle des donnees de tresorerie',
+    description: 'Validation et controle des donnees de trésorerie',
     role: 'Controller',
     permissions: [
       { resource: 'dashboard', actions: ['view'] },

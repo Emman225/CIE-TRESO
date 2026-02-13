@@ -1,7 +1,7 @@
 import type { AuditEntry } from '@/shared/types';
 
 export const mockAuditEntries: AuditEntry[] = [
-  { id: '1', date: '2024-03-15 14:30', userId: '1', userName: 'Jean Kouassi', action: 'CREATE', resource: 'Plan Tresorerie 2024', details: 'Creation du plan annuel 2024 avec 12 periodes' },
+  { id: '1', date: '2024-03-15 14:30', userId: '1', userName: 'Jean Kouassi', action: 'CREATE', resource: 'Plan Trésorerie 2024', details: 'Creation du plan annuel 2024 avec 12 periodes' },
   { id: '2', date: '2024-03-15 11:20', userId: '2', userName: 'Marie Tanoh', action: 'IMPORT', resource: 'Releve BACI Mars', details: 'Import de 245 lignes - 1.25B FCFA total' },
   { id: '3', date: '2024-03-14 16:45', userId: '4', userName: 'Salimata Yao', action: 'UPDATE', resource: 'Rubrique PAY_EXP_GAS', details: 'Modification du type de saisie: Manuel -> Formule' },
   { id: '4', date: '2024-03-14 09:00', userId: '1', userName: 'Jean Kouassi', action: 'DELETE', resource: 'Utilisateur Test', details: 'Suppression du compte test@cie.ci' },

@@ -1,9 +1,12 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import * as XLSX from 'xlsx';
 import { Badge } from '@/presentation/components/ui/Badge';
 import { Button } from '@/presentation/components/ui/Button';
 import { Modal } from '@/presentation/components/ui/Modal';
 import { ConfirmDialog } from '@/presentation/components/ui/ConfirmDialog';
 import { useToast } from '@/presentation/hooks/useToast';
+import { configRepository } from '@/infrastructure/di/container';
+import type { PlanEntity } from '@/domain/entities/PlanTresorerie';
 
 // ============ Types ============
 type EcheanceStatus = 'pending' | 'paid' | 'overdue' | 'scheduled';
@@ -214,6 +217,12 @@ const EcheancierPage: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
   const [selectedMonth, setSelectedMonth] = useState('2026-02');
+  const [plans, setPlans] = useState<PlanEntity[]>([]);
+  const [selectedPlanId, setSelectedPlanId] = useState<string>('all');
+
+  useEffect(() => {
+    configRepository.getPlans().then(setPlans);
+  }, []);
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -357,6 +366,26 @@ const EcheancierPage: React.FC = () => {
     setConfirmDeleteId(null);
   };
 
+  const handleExport = () => {
+    const rows = filteredEcheances.map((e) => ({
+      Reference: e.reference,
+      Libelle: e.label,
+      Beneficiaire: e.beneficiary,
+      Type: TYPE_CONFIG[e.type].label,
+      'Date Echeance': e.dueDate,
+      'Montant (FCFA)': e.amount,
+      Statut: STATUS_CONFIG[e.status].label,
+      Priorite: e.priority === 'high' ? 'Haute' : e.priority === 'medium' ? 'Moyenne' : 'Basse',
+      Recurrent: e.recurrent ? 'Oui' : 'Non',
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Echeancier');
+    XLSX.writeFile(wb, 'Echeancier_Export.xlsx');
+    addToast('Export reussi - Le fichier Excel a ete telecharge.', 'success');
+  };
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -391,6 +420,9 @@ const EcheancierPage: React.FC = () => {
               Calendrier
             </button>
           </div>
+          <Button variant="outline" size="sm" icon="download" onClick={handleExport}>
+            Exporter
+          </Button>
           <Button variant="primary" size="md" icon="add" onClick={openCreateModal}>
             Nouvelle echeance
           </Button>
@@ -436,6 +468,16 @@ const EcheancierPage: React.FC = () => {
           <option value="all">Tous les statuts</option>
           {Object.entries(STATUS_CONFIG).map(([key, config]) => (
             <option key={key} value={key}>{config.label}</option>
+          ))}
+        </select>
+        <select
+          value={selectedPlanId}
+          onChange={(e) => setSelectedPlanId(e.target.value)}
+          className="py-2 px-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl text-xs font-bold text-zinc-700 dark:text-zinc-300 focus:ring-2 focus:ring-primary/20 outline-none"
+        >
+          <option value="all">Tous les plans</option>
+          {plans.map((p) => (
+            <option key={p.id} value={p.id}>{p.label.replace(/^Plan\s*/i, '')}</option>
           ))}
         </select>
         {viewMode === 'calendar' && (
@@ -512,7 +554,7 @@ const EcheancierPage: React.FC = () => {
                     {echeance.status !== 'paid' && (
                       <button
                         onClick={() => handleMarkAsPaid(echeance.id)}
-                        className="p-2 rounded-lg text-zinc-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all"
+                        className="p-2 rounded-lg text-zinc-400 hover:text-[#22a84c] hover:bg-[#22a84c]/5 dark:hover:bg-[#22a84c]/15 transition-all"
                         title="Marquer comme paye"
                       >
                         <span className="material-symbols-outlined text-lg">check_circle</span>
@@ -591,7 +633,7 @@ const EcheancierPage: React.FC = () => {
                             className={`text-[10px] font-bold px-2 py-1 rounded truncate ${
                               config.variant === 'error' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
                               config.variant === 'warning' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
-                              config.variant === 'success' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                              config.variant === 'success' ? 'bg-[#22a84c]/10 text-[#22a84c] dark:bg-[#22a84c]/20 dark:text-[#2ec45a]' :
                               'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
                             }`}
                             title={ech.label}

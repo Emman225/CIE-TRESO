@@ -22,6 +22,7 @@ export enum View {
   VisImpot = 'VIS_IMPOT',
   VisAnnexe = 'VIS_ANNEXE',
   VisGaz = 'VIS_GAZ',
+  TemplateScenario = 'TEMPLATE_SCENARIO',
   Users = 'USERS',
   Profiles = 'PROFILES',
   Settings = 'SETTINGS',

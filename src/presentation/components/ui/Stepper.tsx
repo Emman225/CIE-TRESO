@@ -42,7 +42,7 @@ export const Stepper: React.FC<StepperProps> = ({ steps, currentStep }) => {
                   transition-all duration-500
                   ${
                     isCompleted
-                      ? 'bg-green-500 text-white shadow-lg shadow-green-500/20'
+                      ? 'bg-[#22a84c] text-white shadow-lg shadow-[#22a84c]/20'
                       : isCurrent
                         ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-110'
                         : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'

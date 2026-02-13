@@ -39,8 +39,8 @@ export const MultiScenarioChart: React.FC<MultiScenarioChartProps> = ({
               <stop offset="95%" stopColor="#e65000" stopOpacity={0} />
             </linearGradient>
             <linearGradient id="gradOptimistic" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#22c55e" stopOpacity={0.1} />
-              <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+              <stop offset="5%" stopColor="#22a84c" stopOpacity={0.1} />
+              <stop offset="95%" stopColor="#22a84c" stopOpacity={0} />
             </linearGradient>
             <linearGradient id="gradPessimistic" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#ef4444" stopOpacity={0.1} />
@@ -108,7 +108,7 @@ export const MultiScenarioChart: React.FC<MultiScenarioChartProps> = ({
             type="monotone"
             dataKey="optimistic"
             name="Optimiste"
-            stroke="#22c55e"
+            stroke="#22a84c"
             strokeWidth={2}
             fillOpacity={1}
             fill="url(#gradOptimistic)"

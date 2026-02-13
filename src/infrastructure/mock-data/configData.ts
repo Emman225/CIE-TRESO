@@ -34,8 +34,8 @@ export const mockPeriodes: PeriodeEntity[] = [
 ];
 
 export const mockPlans: PlanEntity[] = [
-  { id: '1', label: 'Plan Tresorerie 2024', year: 2024, status: 'Active', periodeIds: ['1', '2', '3', '4', '5'], createdAt: '2024-01-01' },
-  { id: '2', label: 'Plan Tresorerie 2023', year: 2023, status: 'Closed', periodeIds: [], createdAt: '2023-01-01' },
+  { id: '1', label: 'Plan Trésorerie 2024', year: 2024, status: 'Active', periodeIds: ['1', '2', '3', '4', '5'], createdAt: '2024-01-01' },
+  { id: '2', label: 'Plan Trésorerie 2023', year: 2023, status: 'Closed', periodeIds: [], createdAt: '2023-01-01' },
   { id: '3', label: 'Plan Previsionnel S2', year: 2024, status: 'Draft', periodeIds: ['3', '4', '5'], createdAt: '2024-03-15' },
 ];
 
@@ -69,7 +69,7 @@ export const mockProfiles: ProfileEntity[] = [
   },
   {
     id: '2',
-    name: 'Analyste Tresorerie',
+    name: 'Analyste Trésorerie',
     description: 'Gestion du plan et des previsions',
     permissions: [
       { resource: 'dashboard', actions: ['view', 'export'] },
@@ -104,6 +104,6 @@ export const mockProfiles: ProfileEntity[] = [
 export const mockUsers: UserEntity[] = [
   { id: '1', name: 'Jean Kouassi', email: 'j.kouassi@cie.ci', phone: '+225 07 00 00 01', role: 'Admin', profileId: '1', status: 'Active', lastLogin: 'Il y a 2h', avatar: 'https://picsum.photos/100/100?u=1', createdAt: '2023-06-01' },
   { id: '2', name: 'Marie Tanoh', email: 'm.tanoh@cie.ci', phone: '+225 07 00 00 02', role: 'Analyst', profileId: '2', status: 'Active', lastLogin: 'Il y a 5h', avatar: 'https://picsum.photos/100/100?u=2', createdAt: '2023-07-15' },
-  { id: '3', name: 'Amadou Koffi', email: 'a.koffi@cie.ci', phone: '+225 07 00 00 03', role: 'Direction', profileId: '3', status: 'Inactive', lastLogin: 'Il y a 2 jours', avatar: 'https://picsum.photos/100/100?u=3', createdAt: '2023-08-20' },
+  { id: '3', name: 'Amadou Koffi', email: 'a.koffi@cie.ci', phone: '+225 07 00 00 03', role: 'Direction', profileId: '3', status: 'Active', lastLogin: 'Il y a 2 jours', avatar: 'https://picsum.photos/100/100?u=3', createdAt: '2023-08-20' },
   { id: '4', name: 'Salimata Yao', email: 's.yao@cie.ci', phone: '+225 07 00 00 04', role: 'Controller', profileId: '2', status: 'Active', lastLogin: 'Il y a 1h', avatar: 'https://picsum.photos/100/100?u=4', createdAt: '2023-09-10' },
 ];

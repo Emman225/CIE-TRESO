@@ -4,7 +4,8 @@ import { Badge } from '@/presentation/components/ui/Badge';
 import { DataTable } from '@/presentation/components/ui/DataTable';
 import { SkeletonCard, SkeletonTable } from '@/presentation/components/ui/Skeleton';
 import { useToast } from '@/presentation/hooks/useToast';
-import { reportRepository, auditLogRepository } from '@/infrastructure/di/container';
+import { reportRepository, auditLogRepository, configRepository } from '@/infrastructure/di/container';
+import type { PlanEntity } from '@/domain/entities/PlanTresorerie';
 import type { AuditEntry, AuditActionSimple } from '@/shared/types';
 import type { AuditLogEntity, AuditAction } from '@/domain/entities/AuditLog';
 
@@ -20,35 +21,27 @@ interface ReportTemplate {
 
 const REPORT_TEMPLATES: ReportTemplate[] = [
   {
-    id: 'consolidated',
-    title: 'Rapport Consolide',
-    description: 'Vue globale des encaissements et decaissements avec analyse des ecarts par rapport au budget previsionnel.',
-    icon: 'summarize',
-    category: 'Tresorerie',
-    formats: ['excel', 'pdf'],
+    id: 'plan-tresorerie',
+    title: 'Plan de trésorerie',
+    description: 'Export du plan de trésorerie consolide avec les encaissements et decaissements previsionnels.',
+    icon: 'account_balance_wallet',
+    category: 'Trésorerie',
+    formats: ['excel'],
   },
   {
-    id: 'cashflow',
-    title: 'Flux de Tresorerie',
-    description: 'Detail mensuel des flux entrants et sortants avec evolution du solde de tresorerie.',
-    icon: 'swap_vert',
-    category: 'Tresorerie',
-    formats: ['excel', 'pdf'],
+    id: 'tresorerie-comptable',
+    title: 'Trésorerie comptable',
+    description: 'Export des donnees de trésorerie comptable avec le detail des ecritures et soldes.',
+    icon: 'menu_book',
+    category: 'Comptabilite',
+    formats: ['excel'],
   },
   {
-    id: 'forecast-vs-actual',
-    title: 'Previsions vs Realise',
-    description: 'Comparaison entre les previsions budgetaires et les montants realises avec taux de realisation.',
-    icon: 'compare_arrows',
-    category: 'Analyse',
-    formats: ['excel', 'pdf'],
-  },
-  {
-    id: 'kpi-dashboard',
-    title: 'Indicateurs de Performance',
-    description: 'Tableau de bord des KPIs cles: taux de recouvrement, delais de paiement, ratio de liquidite.',
-    icon: 'speed',
-    category: 'Performance',
+    id: 'preparation-comite',
+    title: 'Preparation comité trésorerie',
+    description: 'Document de synthese pour le comité de trésorerie avec indicateurs cles et analyses.',
+    icon: 'groups',
+    category: 'Comite',
     formats: ['pdf'],
   },
 ];
@@ -74,6 +67,10 @@ const ReportingPage: React.FC = () => {
   // Loading state
   const [isLoading, setIsLoading] = useState(true);
 
+  // Plan filter
+  const [plans, setPlans] = useState<PlanEntity[]>([]);
+  const [selectedPlanId, setSelectedPlanId] = useState<string>('all');
+
   // Audit filters
   const [auditEntries, setAuditEntries] = useState<AuditEntry[]>([]);
 
@@ -98,6 +95,8 @@ const ReportingPage: React.FC = () => {
     const loadData = async () => {
       try {
         const result = await auditLogRepository.getAll({ pageSize: 100 });
+        const loadedPlans = await configRepository.getPlans();
+        setPlans(loadedPlans);
         const mapped: AuditEntry[] = result.data.map((log: AuditLogEntity) => ({
           id: log.id,
           date: new Date(log.timestamp).toLocaleString('fr-FR', {
@@ -217,7 +216,7 @@ const ReportingPage: React.FC = () => {
         return (
           <div className="flex items-center gap-2">
             <span className={`material-symbols-outlined text-sm ${
-              config.variant === 'success' ? 'text-green-500' :
+              config.variant === 'success' ? 'text-[#22a84c]' :
               config.variant === 'error' ? 'text-red-500' :
               config.variant === 'warning' ? 'text-orange-500' :
               config.variant === 'info' ? 'text-blue-500' :
@@ -256,38 +255,50 @@ const ReportingPage: React.FC = () => {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
-          Reporting
-        </h1>
-        <p className="text-sm text-zinc-500 font-semibold mt-1">
-          Rapports et analyses de tresorerie
-        </p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
+            Reporting
+          </h1>
+          <p className="text-sm text-zinc-500 font-semibold mt-1">
+            Rapports et analyses de trésorerie
+          </p>
+        </div>
+        <select
+          value={selectedPlanId}
+          onChange={(e) => setSelectedPlanId(e.target.value)}
+          className="py-2.5 px-4 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-bold text-zinc-700 dark:text-zinc-300 focus:ring-2 focus:ring-primary/20 outline-none"
+        >
+          <option value="all">Tous les plans</option>
+          {plans.map((p) => (
+            <option key={p.id} value={p.id}>{p.label.replace(/^Plan\s*/i, '')}</option>
+          ))}
+        </select>
       </div>
 
       {/* Sub-menu Tabs */}
-      <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-zinc-800">
+      <div className="flex items-center gap-3 bg-zinc-100 dark:bg-zinc-800 p-1.5 rounded-2xl w-fit">
         <button
           onClick={() => setActiveTab('finance')}
-          className={`flex items-center gap-2 px-5 py-3 text-sm font-black transition-all border-b-2 -mb-px ${
+          className={`flex items-center gap-2 px-6 py-3 text-sm font-black rounded-xl transition-all ${
             activeTab === 'finance'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+              ? 'bg-[#e65000] text-white shadow-lg shadow-[#e65000]/20'
+              : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-white/50 dark:hover:bg-zinc-700/50'
           }`}
         >
           <span className="material-symbols-outlined text-lg">assessment</span>
-          Reporting Finance
+          Reporting
         </button>
         <button
           onClick={() => setActiveTab('audit')}
-          className={`flex items-center gap-2 px-5 py-3 text-sm font-black transition-all border-b-2 -mb-px ${
+          className={`flex items-center gap-2 px-6 py-3 text-sm font-black rounded-xl transition-all ${
             activeTab === 'audit'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+              ? 'bg-[#e65000] text-white shadow-lg shadow-[#e65000]/20'
+              : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-white/50 dark:hover:bg-zinc-700/50'
           }`}
         >
           <span className="material-symbols-outlined text-lg">history</span>
-          Reporting Audit
+          Audit
         </button>
       </div>
 
@@ -302,13 +313,13 @@ const ReportingPage: React.FC = () => {
           </div>
 
           {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {[...Array(4)].map((_, i) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[...Array(3)].map((_, i) => (
                 <SkeletonCard key={i} lines={4} />
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {REPORT_TEMPLATES.map((template) => (
                 <div
                   key={template.id}
@@ -340,7 +351,7 @@ const ReportingPage: React.FC = () => {
                         icon="table_chart"
                         isLoading={generatingReport === `${template.id}-excel`}
                         onClick={() => handleGenerateReport(template, 'excel')}
-                        className="flex-1"
+                        className="flex-1 !border-[#22a84c] !text-[#22a84c] hover:!bg-[#22a84c] hover:!text-white"
                       >
                         Excel
                       </Button>
@@ -468,7 +479,7 @@ const ReportingPage: React.FC = () => {
           const count = auditEntries.filter((e) => e.action === action).length;
           const config = ACTION_BADGE_MAP[action];
           const colorMap: Record<string, string> = {
-            success: '#22c55e',
+            success: '#22a84c',
             error: '#ef4444',
             warning: '#f59e0b',
             info: '#3b82f6',

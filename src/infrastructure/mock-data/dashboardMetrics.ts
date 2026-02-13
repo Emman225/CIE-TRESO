@@ -124,9 +124,9 @@ export const transactions: Transaction[] = [
 export const alerts: Alert[] = [
   {
     id: '1',
-    title: 'Tresorerie sous le seuil',
+    title: 'Trésorerie sous le seuil',
     message:
-      'Le solde de tresorerie est passe sous le seuil minimum de 800M FCFA pour le Pole Distribution.',
+      'Le solde de trésorerie est passe sous le seuil minimum de 800M FCFA pour le Pole Distribution.',
     severity: 'critical',
     timestamp: 'Il y a 2h',
     read: false,

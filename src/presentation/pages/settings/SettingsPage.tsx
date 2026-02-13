@@ -9,8 +9,8 @@ import type { PeriodeEntity } from '@/domain/entities/Periode';
 import type { PlanEntity } from '@/domain/entities/PlanTresorerie';
 
 const SETTINGS_TABS = [
-  { id: 'categories', label: 'Categories', icon: 'category' },
   { id: 'regroupements', label: 'Regroupements', icon: 'folder_copy' },
+  { id: 'categories', label: 'Categories', icon: 'category' },
   { id: 'rubriques', label: 'Rubriques', icon: 'list_alt' },
   { id: 'periodes', label: 'Periodes', icon: 'calendar_month' },
   { id: 'plans', label: 'Plans', icon: 'account_balance' },
@@ -19,7 +19,7 @@ const SETTINGS_TABS = [
 
 const SettingsPage: React.FC = () => {
   const { addToast } = useToast();
-  const [activeTab, setActiveTab] = useState('categories');
+  const [activeTab, setActiveTab] = useState('regroupements');
 
   // --- Categories ---
   const [categories, setCategories] = useState<Categorie[]>([]);
@@ -76,7 +76,7 @@ const SettingsPage: React.FC = () => {
   const renderCategoriesPanel = () => (
     <ConfigCrudPanel<Categorie>
       title="Categories"
-      subtitle="Classification des flux de tresorerie"
+      subtitle="Classification des flux de trésorerie"
       items={categories}
       selectedItem={selectedCategorie}
       onSelect={setSelectedCategorie}
@@ -125,15 +125,17 @@ const SettingsPage: React.FC = () => {
             <input type="text" value={item.code} onChange={(e) => onChange({ ...item, code: e.target.value })} className={inputClass} />
           </div>
           <div>
-            <label className={labelClass}>Type de flux</label>
-            <select value={item.type} onChange={(e) => onChange({ ...item, type: e.target.value as 'RECEIPT' | 'PAYMENT' })} className={selectClass}>
-              <option value="RECEIPT">Encaissement</option>
-              <option value="PAYMENT">Decaissement</option>
+            <label className={labelClass}>Regroupement</label>
+            <select value={item.regroupementId || ''} onChange={(e) => onChange({ ...item, regroupementId: e.target.value || undefined })} className={selectClass}>
+              <option value="">-- Aucun --</option>
+              {regroupements.map((r) => (
+                <option key={r.id} value={r.id}>{r.label}</option>
+              ))}
             </select>
           </div>
           <div>
             <label className={labelClass}>Description</label>
-            <textarea value={item.description} onChange={(e) => onChange({ ...item, description: e.target.value })} rows={3} className={`${inputClass} resize-none`} />
+            <textarea value={item.description ?? ''} onChange={(e) => onChange({ ...item, description: e.target.value })} rows={3} className={`${inputClass} resize-none`} />
           </div>
           <div className="flex items-center gap-3">
             <label className="text-xs font-black text-zinc-500 uppercase tracking-widest">Actif</label>
@@ -154,7 +156,7 @@ const SettingsPage: React.FC = () => {
   const renderRegroupementsPanel = () => (
     <ConfigCrudPanel<Regroupement>
       title="Regroupements"
-      subtitle="Groupes de lignes du plan de tresorerie"
+      subtitle="Groupes de lignes du plan de trésorerie"
       items={regroupements}
       selectedItem={selectedRegroupement}
       onSelect={setSelectedRegroupement}
@@ -202,13 +204,6 @@ const SettingsPage: React.FC = () => {
             <input type="text" value={item.code} onChange={(e) => onChange({ ...item, code: e.target.value })} className={inputClass} />
           </div>
           <div>
-            <label className={labelClass}>Type</label>
-            <select value={item.type} onChange={(e) => onChange({ ...item, type: e.target.value as 'Encaissement' | 'Decaissement' })} className={selectClass}>
-              <option value="Encaissement">Encaissement</option>
-              <option value="Decaissement">Decaissement</option>
-            </select>
-          </div>
-          <div>
             <label className={labelClass}>Ordre d'affichage</label>
             <input type="number" value={item.order} onChange={(e) => onChange({ ...item, order: Number(e.target.value) })} className={inputClass} />
           </div>
@@ -221,7 +216,7 @@ const SettingsPage: React.FC = () => {
   const renderRubriquesPanel = () => (
     <ConfigCrudPanel<Rubrique>
       title="Rubriques"
-      subtitle="Lignes detaillees du plan de tresorerie"
+      subtitle="Lignes detaillees du plan de trésorerie"
       items={rubriques}
       selectedItem={selectedRubrique}
       onSelect={setSelectedRubrique}
@@ -270,13 +265,6 @@ const SettingsPage: React.FC = () => {
             <input type="text" value={item.code} onChange={(e) => onChange({ ...item, code: e.target.value })} className={inputClass} />
           </div>
           <div>
-            <label className={labelClass}>Groupe</label>
-            <select value={item.group} onChange={(e) => onChange({ ...item, group: e.target.value as 'RECEIPT' | 'PAYMENT' })} className={selectClass}>
-              <option value="RECEIPT">Encaissement</option>
-              <option value="PAYMENT">Decaissement</option>
-            </select>
-          </div>
-          <div>
             <label className={labelClass}>Type de saisie</label>
             <select value={item.type} onChange={(e) => onChange({ ...item, type: e.target.value as 'Manual' | 'Formula' | 'Calculated' })} className={selectClass}>
               <option value="Manual">Manuel</option>
@@ -311,7 +299,7 @@ const SettingsPage: React.FC = () => {
   const renderPeriodesPanel = () => (
     <ConfigCrudPanel<PeriodeEntity>
       title="Periodes"
-      subtitle="Periodes mensuelles de tresorerie"
+      subtitle="Periodes mensuelles de trésorerie"
       items={periodes}
       selectedItem={selectedPeriode}
       onSelect={setSelectedPeriode}
@@ -387,11 +375,102 @@ const SettingsPage: React.FC = () => {
 
   // ============ Plans Tab ============
   const renderPlansPanel = () => (
-    <div className="bg-white dark:bg-zinc-900 rounded-[24px] border border-zinc-200 dark:border-zinc-800 p-12 text-center">
-      <span className="material-symbols-outlined text-5xl text-zinc-300 dark:text-zinc-600 mb-4 block">account_balance</span>
-      <h3 className="text-lg font-black text-zinc-400 dark:text-zinc-500">Plans de Tresorerie</h3>
-      <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-2">Aucun contenu a afficher pour le moment.</p>
-    </div>
+    <ConfigCrudPanel<PlanEntity>
+      title="Plans de Trésorerie"
+      subtitle="Plans previsionnels et budgets de trésorerie"
+      items={plans}
+      selectedItem={selectedPlan}
+      onSelect={setSelectedPlan}
+      onNew={() => {
+        const newItem: PlanEntity = {
+          id: String(Date.now()),
+          label: 'Nouveau plan',
+          year: new Date().getFullYear(),
+          periodeIds: [],
+          status: 'Draft',
+          createdAt: new Date().toISOString().split('T')[0],
+        };
+        setPlans((prev) => [...prev, newItem]);
+        setSelectedPlan(newItem);
+      }}
+      onSave={async (item) => {
+        setPlans((prev) => prev.map((p) => (p.id === item.id ? item : p)));
+        addToast(`Plan "${item.label}" enregistre`, 'success');
+      }}
+      onDelete={async (id) => {
+        setPlans((prev) => prev.filter((p) => p.id !== id));
+        setSelectedPlan(null);
+        addToast('Plan supprime', 'success');
+      }}
+      renderListItem={(item, isSelected) => (
+        <div>
+          <div className="flex items-center gap-2">
+            <p className={`text-sm font-black ${isSelected ? 'text-primary' : 'text-zinc-900 dark:text-white'}`}>
+              {item.label}
+            </p>
+            <Badge variant={item.status === 'Active' ? 'success' : item.status === 'Draft' ? 'warning' : 'neutral'}>
+              {item.status === 'Active' ? 'Actif' : item.status === 'Draft' ? 'Brouillon' : 'Cloture'}
+            </Badge>
+          </div>
+          <p className="text-xs text-zinc-400 mt-1">
+            {item.year} — {(item.periodeIds || []).length} periode{(item.periodeIds || []).length > 1 ? 's' : ''} — Cree le {item.createdAt}
+          </p>
+        </div>
+      )}
+      renderEditForm={(item, onChange) => (
+        <div className="space-y-5">
+          <div>
+            <label className={labelClass}>Libelle</label>
+            <input type="text" value={item.label ?? ''} onChange={(e) => onChange({ ...item, label: e.target.value })} className={inputClass} />
+          </div>
+          <div>
+            <label className={labelClass}>Annee</label>
+            <input type="number" value={item.year ?? new Date().getFullYear()} onChange={(e) => onChange({ ...item, year: Number(e.target.value) })} className={inputClass} />
+          </div>
+          <div>
+            <label className={labelClass}>Statut</label>
+            <select value={item.status ?? 'Draft'} onChange={(e) => onChange({ ...item, status: e.target.value as 'Draft' | 'Active' | 'Closed' })} className={selectClass}>
+              <option value="Draft">Brouillon</option>
+              <option value="Active">Actif</option>
+              <option value="Closed">Cloture</option>
+            </select>
+          </div>
+          <div>
+            <label className={labelClass}>Periodes associees</label>
+            <div className="space-y-2 max-h-48 overflow-y-auto bg-zinc-50 dark:bg-zinc-800 rounded-xl p-3 border border-zinc-200 dark:border-zinc-700">
+              {periodes.length === 0 ? (
+                <p className="text-xs text-zinc-400">Aucune periode disponible</p>
+              ) : (
+                periodes.map((p) => (
+                  <label key={p.id} className="flex items-center gap-3 p-2 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-lg cursor-pointer transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={(item.periodeIds || []).includes(p.id)}
+                      onChange={(e) => {
+                        const ids = item.periodeIds || [];
+                        const newIds = e.target.checked
+                          ? [...ids, p.id]
+                          : ids.filter((id) => id !== p.id);
+                        onChange({ ...item, periodeIds: newIds });
+                      }}
+                      className="rounded text-primary focus:ring-primary border-zinc-300"
+                    />
+                    <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{p.label}</span>
+                    <Badge variant={p.isClosed ? 'neutral' : 'success'}>
+                      {p.isClosed ? 'Cloture' : 'Ouvert'}
+                    </Badge>
+                  </label>
+                ))
+              )}
+            </div>
+          </div>
+          <div>
+            <label className={labelClass}>Date de creation</label>
+            <input type="date" value={(item.createdAt || '').split('T')[0]} onChange={(e) => onChange({ ...item, createdAt: e.target.value })} className={inputClass} />
+          </div>
+        </div>
+      )}
+    />
   );
 
   // ============ Poles Tab ============
@@ -438,11 +517,11 @@ const SettingsPage: React.FC = () => {
         <div className="space-y-5">
           <div>
             <label className={labelClass}>Libelle</label>
-            <input type="text" value={item.label} onChange={(e) => onChange({ ...item, label: e.target.value })} className={inputClass} />
+            <input type="text" value={item.label ?? ''} onChange={(e) => onChange({ ...item, label: e.target.value })} className={inputClass} />
           </div>
           <div>
             <label className={labelClass}>Code</label>
-            <input type="text" value={item.code} onChange={(e) => onChange({ ...item, code: e.target.value })} className={inputClass} />
+            <input type="text" value={item.code ?? ''} onChange={(e) => onChange({ ...item, code: e.target.value })} className={inputClass} />
           </div>
           <div className="flex items-center gap-3">
             <label className="text-xs font-black text-zinc-500 uppercase tracking-widest">Actif</label>

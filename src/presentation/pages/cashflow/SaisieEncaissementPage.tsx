@@ -21,19 +21,19 @@ const SaisieEncaissementPage: React.FC = () => {
     setIsSubmitting(true);
     setTimeout(() => {
       setIsSubmitting(false);
-      addToast({ type: 'success', title: 'Encaissement enregistre', message: 'Le flux entrant a ete ajoute au plan de tresorerie.' });
+      addToast({ type: 'success', title: 'Encaissement enregistre', message: 'Le flux entrant a ete ajoute au plan de trésorerie.' });
       setTimeout(() => navigate(PATH.PLAN), 1000);
     }, 1500);
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-8">
+    <div className="py-8">
       {/* Toasts */}
       {toasts.length > 0 && (
         <div className="fixed top-4 right-4 z-[100] space-y-2 max-w-sm">
           {toasts.map((t) => (
             <div key={t.id} className={`p-4 rounded-2xl shadow-xl border text-sm font-bold ${
-              t.type === 'success' ? 'bg-green-50 border-green-200 text-green-800' : 'bg-red-50 border-red-200 text-red-800'
+              t.type === 'success' ? 'bg-[#22a84c]/10 border-[#22a84c]/30 text-[#22a84c]' : 'bg-red-50 border-red-200 text-red-800'
             }`}>
               <p className="font-black text-xs uppercase tracking-wider">{t.title}</p>
               {t.message && <p className="mt-1 text-xs opacity-80">{t.message}</p>}
@@ -43,13 +43,13 @@ const SaisieEncaissementPage: React.FC = () => {
       )}
 
       <div className="bg-white dark:bg-zinc-900 rounded-[32px] border border-zinc-200 dark:border-zinc-800 shadow-xl overflow-hidden">
-        <div className="bg-green-600 p-8 flex items-center gap-6">
+        <div className="p-8 flex items-center gap-6" style={{ backgroundColor: '#22a84c' }}>
           <div className="size-16 rounded-2xl bg-white/20 flex items-center justify-center text-white">
             <span className="material-symbols-outlined text-4xl filled">add_card</span>
           </div>
           <div>
             <h2 className="text-2xl font-black text-white tracking-tight">Nouvel Encaissement</h2>
-            <p className="text-green-100 text-sm font-medium mt-1">Saisie manuelle d'une recette ou d'un flux entrant.</p>
+            <p className="text-white/80 text-sm font-medium mt-1">Saisie manuelle d'une recette ou d'un flux entrant.</p>
           </div>
         </div>
 
@@ -64,7 +64,7 @@ const SaisieEncaissementPage: React.FC = () => {
                   required
                   value={formData.date}
                   onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                  className="w-full h-12 pl-12 pr-4 bg-zinc-50 dark:bg-zinc-800 border-zinc-100 dark:border-zinc-700 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-green-500/20 text-zinc-900 dark:text-white transition-all"
+                  className="w-full h-12 pl-12 pr-4 bg-zinc-50 dark:bg-zinc-800 border-zinc-100 dark:border-zinc-700 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-[#22a84c]/20 text-zinc-900 dark:text-white transition-all"
                 />
               </div>
             </div>
@@ -79,7 +79,7 @@ const SaisieEncaissementPage: React.FC = () => {
                   required
                   value={formData.reference}
                   onChange={(e) => setFormData({ ...formData, reference: e.target.value })}
-                  className="w-full h-12 pl-12 pr-4 bg-zinc-50 dark:bg-zinc-800 border-zinc-100 dark:border-zinc-700 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-green-500/20 text-zinc-900 dark:text-white transition-all"
+                  className="w-full h-12 pl-12 pr-4 bg-zinc-50 dark:bg-zinc-800 border-zinc-100 dark:border-zinc-700 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-[#22a84c]/20 text-zinc-900 dark:text-white transition-all"
                 />
               </div>
             </div>
@@ -94,7 +94,7 @@ const SaisieEncaissementPage: React.FC = () => {
                   required
                   value={formData.entity}
                   onChange={(e) => setFormData({ ...formData, entity: e.target.value })}
-                  className="w-full h-12 pl-12 pr-4 bg-zinc-50 dark:bg-zinc-800 border-zinc-100 dark:border-zinc-700 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-green-500/20 text-zinc-900 dark:text-white transition-all"
+                  className="w-full h-12 pl-12 pr-4 bg-zinc-50 dark:bg-zinc-800 border-zinc-100 dark:border-zinc-700 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-[#22a84c]/20 text-zinc-900 dark:text-white transition-all"
                 />
               </div>
             </div>
@@ -106,7 +106,7 @@ const SaisieEncaissementPage: React.FC = () => {
                 <select
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full h-12 pl-12 pr-4 bg-zinc-50 dark:bg-zinc-800 border-zinc-100 dark:border-zinc-700 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-green-500/20 text-zinc-900 dark:text-white transition-all appearance-none"
+                  className="w-full h-12 pl-12 pr-4 bg-zinc-50 dark:bg-zinc-800 border-zinc-100 dark:border-zinc-700 rounded-2xl text-sm font-bold focus:ring-2 focus:ring-[#22a84c]/20 text-zinc-900 dark:text-white transition-all appearance-none"
                 >
                   <option>Vente d'Energie</option>
                   <option>Paiements Mobile Money</option>
@@ -127,7 +127,7 @@ const SaisieEncaissementPage: React.FC = () => {
                   required
                   value={formData.amount}
                   onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                  className="w-full h-16 pl-12 pr-4 bg-zinc-50 dark:bg-zinc-800 border-zinc-100 dark:border-zinc-700 rounded-2xl text-2xl font-black focus:ring-4 focus:ring-green-500/10 text-green-600 dark:text-green-500 transition-all placeholder:text-zinc-300"
+                  className="w-full h-16 pl-12 pr-4 bg-zinc-50 dark:bg-zinc-800 border-zinc-100 dark:border-zinc-700 rounded-2xl text-2xl font-black focus:ring-4 focus:ring-[#22a84c]/10 text-[#22a84c] dark:text-[#2ec45a] transition-all placeholder:text-zinc-300"
                 />
                 <span className="absolute right-6 top-1/2 -translate-y-1/2 font-black text-zinc-300 dark:text-zinc-600">FCFA</span>
               </div>
@@ -140,7 +140,7 @@ const SaisieEncaissementPage: React.FC = () => {
                 placeholder="Details supplementaires..."
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="w-full p-5 bg-zinc-50 dark:bg-zinc-800 border-zinc-100 dark:border-zinc-700 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-green-500/20 text-zinc-900 dark:text-white transition-all"
+                className="w-full p-5 bg-zinc-50 dark:bg-zinc-800 border-zinc-100 dark:border-zinc-700 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-[#22a84c]/20 text-zinc-900 dark:text-white transition-all"
               />
             </div>
           </div>
@@ -156,7 +156,7 @@ const SaisieEncaissementPage: React.FC = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 h-14 bg-green-600 text-white rounded-2xl text-sm font-black shadow-xl shadow-green-500/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+              className="flex-1 h-14 bg-[#22a84c] text-white rounded-2xl text-sm font-black shadow-xl shadow-[#22a84c]/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
             >
               {isSubmitting ? (
                 <>

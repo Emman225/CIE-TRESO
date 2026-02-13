@@ -22,7 +22,7 @@ function fmt(n: number): string {
 function addPdfHeader(doc: jsPDF, title: string, subtitle?: string): number {
   doc.setFontSize(18);
   doc.setTextColor(...CIE_ORANGE);
-  doc.text('CIE - Gestion de Tresorerie', 14, 20);
+  doc.text('CIE - Gestion de Trésorerie', 14, 20);
 
   doc.setFontSize(13);
   doc.setTextColor(0, 0, 0);
@@ -112,7 +112,7 @@ function consolidatedExcel(config: ReportConfig): XLSX.WorkBook {
 
   const rows: (string | number)[][] = [
     ['COMPAGNIE IVOIRIENNE D\'ELECTRICITE'],
-    ['Rapport Consolide de Tresorerie'],
+    ['Rapport Consolide de Trésorerie'],
     [`Exercice ${config.year || 2024}`],
     [`Genere le ${new Date().toLocaleDateString('fr-FR')}`],
     [],
@@ -147,7 +147,7 @@ function consolidatedPdf(config: ReportConfig): jsPDF {
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
   const data = generateTreasuryData();
   const { totEnc, totDec, totEncYear, totDecYear } = computeTotals(data);
-  const startY = addPdfHeader(doc, 'Rapport Consolide de Tresorerie', `Exercice ${config.year || 2024}`);
+  const startY = addPdfHeader(doc, 'Rapport Consolide de Trésorerie', `Exercice ${config.year || 2024}`);
 
   const body = [
     ...data.map((r) => [r['Rubrique'] as string, r['Type'] as string, ...MONTHS_FR.map((m) => fmt(r[m] as number)), fmt(r['Total'] as number)]),
@@ -217,7 +217,7 @@ function cashflowExcel(): XLSX.WorkBook {
 
 function cashflowPdf(): jsPDF {
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-  const startY = addPdfHeader(doc, 'Flux de Tresorerie', 'Detail mensuel des flux entrants et sortants');
+  const startY = addPdfHeader(doc, 'Flux de Trésorerie', 'Detail mensuel des flux entrants et sortants');
 
   autoTable(doc, {
     head: [['Mois', 'Encaissements (M)', 'Decaissements (M)', 'Flux Net (M)', 'Solde Cumule (M)']],
@@ -381,7 +381,7 @@ function kpiPdf(): jsPDF {
   });
 
   doc.addPage();
-  const startY3 = addPdfHeader(doc, 'Evolution du Solde de Tresorerie', 'Progression mensuelle');
+  const startY3 = addPdfHeader(doc, 'Evolution du Solde de Trésorerie', 'Progression mensuelle');
 
   autoTable(doc, {
     head: [['Mois', 'Solde (FCFA)', 'Variation', 'Variation (%)']],
@@ -441,7 +441,7 @@ export class MockReportRepository implements IReportRepository {
     let wb: XLSX.WorkBook;
     switch (config.title) {
       case 'Rapport Consolide': wb = consolidatedExcel(config); break;
-      case 'Flux de Tresorerie': wb = cashflowExcel(); break;
+      case 'Flux de Trésorerie': wb = cashflowExcel(); break;
       case 'Previsions vs Realise': wb = forecastExcel(); break;
       case 'Journal Audit': wb = auditExcel(mockAuditEntries); break;
       default: wb = consolidatedExcel(config); break;
@@ -461,7 +461,7 @@ export class MockReportRepository implements IReportRepository {
     let doc: jsPDF;
     switch (config.title) {
       case 'Rapport Consolide': doc = consolidatedPdf(config); break;
-      case 'Flux de Tresorerie': doc = cashflowPdf(); break;
+      case 'Flux de Trésorerie': doc = cashflowPdf(); break;
       case 'Previsions vs Realise': doc = forecastPdf(); break;
       case 'Indicateurs de Performance': doc = kpiPdf(); break;
       case 'Journal Audit': doc = auditPdf(mockAuditEntries); break;
@@ -477,8 +477,8 @@ export class MockReportRepository implements IReportRepository {
 
   async getAvailableReports(): Promise<AvailableReport[]> {
     return [
-      { id: 'consolidated', name: 'Rapport Consolide', description: 'Vue globale encaissements/decaissements', format: 'excel', category: 'Tresorerie' },
-      { id: 'cashflow', name: 'Flux de Tresorerie', description: 'Detail mensuel des flux', format: 'excel', category: 'Tresorerie' },
+      { id: 'consolidated', name: 'Rapport Consolide', description: 'Vue globale encaissements/decaissements', format: 'excel', category: 'Trésorerie' },
+      { id: 'cashflow', name: 'Flux de Trésorerie', description: 'Detail mensuel des flux', format: 'excel', category: 'Trésorerie' },
       { id: 'forecast', name: 'Previsions vs Realise', description: 'Comparaison budget vs realise', format: 'excel', category: 'Analyse' },
       { id: 'kpi', name: 'Indicateurs de Performance', description: 'KPIs cles', format: 'pdf', category: 'Performance' },
     ];
